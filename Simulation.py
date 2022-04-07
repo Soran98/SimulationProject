@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # Simulation parameters
 N = 100  # number of cells
 rho = 0.8  # density
-T = 1
+T = 1  # tempurature 
 dt = 0.005
 kb = 1      #this is 1.381 * 10**-23 refer to power check
 m = 1  #temporary 
@@ -157,8 +157,8 @@ def Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold):
     # velocity update
     for i in range(N):
         vx[i] = vx[i] + 0.5*((fxold[i]+fx[i])/(m))*dt       # the velocities are being overridden in each component
-        vy[i] = vy[i] + 0.5*((fyold[i]+fy[i])/(m))*dt       #the velocities are being overridden
-        vz[i] = vz[i] + 0.5*((fzold[i]+fz[i])/(m))*dt     #dont know why an error show up with the () because they are closed
+        vy[i] = vy[i] + 0.5*((fyold[i]+fy[i])/(m))*dt     
+        vz[i] = vz[i] + 0.5*((fzold[i]+fz[i])/(m))*dt     
     return pe
 
 #--------------------------------------------------------------------------
@@ -256,7 +256,8 @@ def read_input():
     global T, rcut, rcutsq, offset, dt
     global iseed, nsteps, minDist
 
-    infile=sys.argv[1]
+    #infile=sys.argv[1]
+    infile = "in.input";
     fp = open(infile, mode = 'r')
     nline = len(fp.readlines())
     fp.close()
@@ -299,6 +300,29 @@ def read_input():
                 minDist = float(value)
                 print("MIN-DIST = ", minDist)
 #--------------------------------------------------------------------------
+#Tempurature Control Brown-Clarke
+#--------------------------------------------------------------------------
+@jit(nopython=True)
+def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
+    free = (N-1) * 3
+    dt_2 = dt / 2.0
+    K = 0.0
+
+    for i in range(N):
+        vxi = (vx[i] + dt_2 * fx[i]) / m
+        vyi = (vy[i] + dt_2 * fy[i]) / m
+        vzi = (vz[i] + dt_2 * fz[i]) / m 
+        K = K + vxi * vxi + vyi * vyi + vzi * vzi
+    
+    sysTemp = m * K / free #The system tempurature
+    chi = np.sqrt(sysTemp / T)
+
+    for i in range(N):
+        vx[i] = (vx[i] * ( 2.0 * chi - 1.0) + chi * dt * fx[i]) / m 
+        vy[i] = (vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i]) / m 
+        vz[i] = (vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i]) / m 
+
+
 
 
 #=========================================================================
@@ -346,7 +370,8 @@ start = time.time()
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
     pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
-    velscaling(vx,vy,vz); 
+    velscaling(vx,vy,vz);
+    TempBC(vx,vy,vz,fx,fy,fz); 
 
     if(istep%100==0):
         K = KE(vx,vy,vz)

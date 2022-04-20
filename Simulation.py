@@ -31,6 +31,10 @@ Ly = L
 Lz = L
 print("L = ", L)
 
+
+# Tempurature Control option
+iscaling = 0
+iBC = 1
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
 epsilon = 1
@@ -299,11 +303,20 @@ def read_input():
             if(a == "MIN-DIST"): 
                 minDist = float(value)
                 print("MIN-DIST = ", minDist)
+            if(a == "BROWN-CLARKE-THERMOSTATE"):
+                iBC = int(value)
+                print("Brown clarke thermostat = ", iBC)
+            if(a == "VEL-SCALING-THERMOSTATE"):
+                iscaling = int(value)
+                print("velocity scaling =", iscaling)
+            # if iBC == 1 and iscaling == 1:
+            #     print("Either tempuratures need to be set to 1, not both")
+            #     sys.exit()
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
 @jit(nopython=True)
-def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
+def TempBC(x, y, z, vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
     free = (N-1) * 3
     dt_2 = dt / 2.0
     K = 0.0
@@ -322,6 +335,10 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
         vy[i] = (vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i]) / m 
         vz[i] = (vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i]) / m 
 
+    for i in range(N):
+        x[i] = x[i] + dt * vx[i]
+        y[i] = y[i] + dt * vy[i]
+        z[i] = z[i] + dt * vz[i]
 
 
 
@@ -368,10 +385,22 @@ start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
-    pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
-    copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
-    velscaling(vx,vy,vz);
-    TempBC(vx,vy,vz,fx,fy,fz); 
+    # pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+    # copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
+    # velscaling(vx,vy,vz);
+    # TempBC(vx,vy,vz,fx,fy,fz); 
+
+
+    if iscaling == 1:
+        pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+        copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
+        velscaling(vx,vy,vz);
+    if iBC == 1:
+        pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+        copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);   
+        Force(x, y, z, fx, fy, fz);
+        TempBC(x, y, z, vx, vy, vz, fx, fy, fz); #Controls the tempurate for the system + updates position and velocity
+
 
     if(istep%100==0):
         K = KE(vx,vy,vz)

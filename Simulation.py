@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 # Simulation parameters
-N = 100  # number of cells
+N = 10000000000000000000000000000000000000000000000  # number of cells
 rho = 0.8  # density
 T = 1  # tempurature 
 dt = 0.005
@@ -25,12 +25,15 @@ nsteps = 20000 #how many steps
 
 # Box length
 vol = N/rho # volume
-L = np.power(vol, 1 / 3)  # length of the simulation
+L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
 Lx = L
 Ly = L
 Lz = L
 print("L = ", L)
 
+nbins = 5
+binwidth = Lz / nbins
+VolSlab = Lx * Ly * binwidth
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
 epsilon = 1
@@ -65,7 +68,7 @@ def Force(x,y,z,fx,fy,fz):
             dy = dy - Ly * np.round(dy/Ly)
 
             dz = z[i] - z[j]
-            dz = dz - Lz * np.round(dz/Lz)
+            #dz = dz - Lz * np.round(dz/Lz)
 
             dr2 = dx**2 + dy**2 + dz**2
             #inv = inverse
@@ -152,14 +155,17 @@ def Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold):
         y[i]= y[i] + vy[i]*dt + 0.5*(fyold[i]/m)*(dt2)   
         z[i]= z[i] + vz[i]*dt + 0.5*(fzold[i]/m)*(dt2)
 
-    pe = Force(x,y,z,fx,fy,fz);    
+    pe = Force(x,y,z,fx,fy,fz); 
+    pe_wall = force_wall(x,y,z,fx,fy,fz);   
+
+    peTotal = pe + pe_wall
 
     # velocity update
     for i in range(N):
         vx[i] = vx[i] + 0.5*((fxold[i]+fx[i])/(m))*dt       # the velocities are being overridden in each component
         vy[i] = vy[i] + 0.5*((fyold[i]+fy[i])/(m))*dt     
         vz[i] = vz[i] + 0.5*((fzold[i]+fz[i])/(m))*dt     
-    return pe
+    return peTotal
 
 #--------------------------------------------------------------------------
 #  KE
@@ -247,6 +253,40 @@ def copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold):
         fxold[i] = fx[i]
         fyold[i] = fy[i]
         fzold[i] = fz[i]
+
+#--------------------------------------------------------------------------
+# Build the wall
+#--------------------------------------------------------------------------
+Lzwall = -.7
+Rzwall = L + .7
+epsilon_w = 1
+@jit (nopython=True)
+def force_wall(x, y, z, fx, fy, fz):
+    u = 0.0
+    for i in range(N):
+        
+        #left wall
+        dz = z[i] - Lzwall
+        #print(dz, z[i], Lzwall)
+        #exit()
+        du = epsilon_w * (sigma/dz) ** 9
+        u = u + du
+        wij = 9 * epsilon * (sigma/dz) ** 9
+        wij = wij / (dz ** 2)
+        fz[i] = fz[i] + wij * dz
+   
+    for i in range(N):
+
+        #left wall
+        dz = z[i] - Rzwall
+        du = epsilon_w * (sigma/abs(dz)) ** 9
+        u = u + du
+        wij = 9 * epsilon * (sigma/abs(dz)) ** 9
+        wij = wij / (dz ** 2)
+        fz[i] = fz[i] + wij * dz 
+    
+    return u
+
 #--------------------------------------------------------------------------
 # reading inpiut file 
 #--------------------------------------------------------------------------
@@ -322,7 +362,14 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
         vy[i] = (vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i]) / m 
         vz[i] = (vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i]) / m 
 
-
+#--------------------------------------------------------------------------
+#Density Modulation
+#--------------------------------------------------------------------------
+def density_mod(x, y z):
+    for i in range(N):
+        ibin = z[i] / binwidth
+        numParticle[ibin] = numParticle[ibin] + 1
+        
 
 
 #=========================================================================
@@ -348,6 +395,7 @@ z = np.zeros(N)
 fx = np.zeros(N)
 fy = np.zeros(N)
 fz = np.zeros(N)
+numParticle = np.zeros(N)
 
 # opening energy file
 pe_file = "energy.txt"
@@ -361,6 +409,8 @@ InitConf(minDist) #initial position
 InitVel()      #initial velocity
 
 Force(x,y,z,fx,fy,fz) # calling Force first time
+force_wall(x,y,z,fx,fy,fz)
+
 copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first time
 
 
@@ -371,7 +421,11 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
     velscaling(vx,vy,vz);
-    TempBC(vx,vy,vz,fx,fy,fz); 
+    #TempBC(vx,vy,vz,fx,fy,fz); 
+    if istep % density_sample == 0
+        density_mod(x,y,z)
+        for islab in range(nbins):
+            fp1.write("%s %s \n"%(islab, numParticle[islab]/volSlab))
 
     if(istep%100==0):
         K = KE(vx,vy,vz)

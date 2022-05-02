@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 # Simulation parameters
-N = 10000000000000000000000000000000000000000000000  # number of cells
+N = 10000  # number of cells
 rho = 0.8  # density
 T = 1  # tempurature 
 dt = 0.005
@@ -28,12 +28,16 @@ vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
 Lx = L
 Ly = L
-Lz = L
+Lz = L +1.4
 print("L = ", L)
 
-nbins = 5
+
+
+nbins = L
 binwidth = Lz / nbins
-VolSlab = Lx * Ly * binwidth
+Volbin = Lx * Ly * binwidth
+
+density_sample = 1000
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
 epsilon = 1
@@ -365,10 +369,11 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
 #--------------------------------------------------------------------------
 #Density Modulation
 #--------------------------------------------------------------------------
-def density_mod(x, y z):
+@jit (nopython=True)
+def density_mod(x, y, z):
     for i in range(N):
-        ibin = z[i] / binwidth
-        numParticle[ibin] = numParticle[ibin] + 1
+        ibin = z[i] / binwidth #the number of bins
+        #numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
         
 
 
@@ -402,6 +407,10 @@ pe_file = "energy.txt"
 fp = open(pe_file, mode="w")
 fp.write("# istep   pe  t_kin   ke\n")
 
+#opening density file
+density_file = "density.txt"
+fp1 = open(density_file, mode="w")
+
 
 random.seed(iseed) # to accept seed for random number generator: Must be at the top of MaIn function
 
@@ -422,10 +431,11 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
     velscaling(vx,vy,vz);
     #TempBC(vx,vy,vz,fx,fy,fz); 
-    if istep % density_sample == 0
+    if istep % density_sample == 0:
         density_mod(x,y,z)
-        for islab in range(nbins):
-            fp1.write("%s %s \n"%(islab, numParticle[islab]/volSlab))
+        for islab in range(int(nbins)):
+            fp1.write("%s %s \n"%(islab, numParticle[islab]/Volbin))
+            fp1.flush();
 
     if(istep%100==0):
         K = KE(vx,vy,vz)
@@ -434,6 +444,7 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
         fp.flush();
         print("istep, pe ", istep, pe )
 fp.close()
+fp1.close()
 # SIMULATION ITERATION ENDS HERE
 
 end = time.time()

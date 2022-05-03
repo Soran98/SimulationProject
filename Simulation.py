@@ -28,12 +28,13 @@ vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
 Lx = L
 Ly = L
-Lz = L +1.4
+Lz = (vol / (Lx*Ly)) - 1.4
 print("L = ", L)
 
+#neighbors stuff
+skin = 0.3
 
-
-nbins = L
+nbins = L 
 binwidth = Lz / nbins
 Volbin = Lx * Ly * binwidth
 
@@ -365,12 +366,69 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
         vx[i] = (vx[i] * ( 2.0 * chi - 1.0) + chi * dt * fx[i]) / m 
         vy[i] = (vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i]) / m 
         vz[i] = (vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i]) / m 
+#--------------------------------------------------------------------------
+#Polydispersity 
+#--------------------------------------------------------------------------
+# def fixParticleSizes():
+# for i in range(N):
+#     particle_sizes
+
+
+#--------------------------------------------------------------------------
+# Creating Neighbors List  
+#--------------------------------------------------------------------------
+@jit(nopython=True)
+def nList(): 
+    for i in range(N):
+        xold[i] = x[i] 
+        yold[i] = y[i] 
+        zold[i] = z[i] 
+
+    
+    non[i] = 0               #number of neighbors 
+    for i in range(N):
+        for j in range(i+1, N):
+            dx =x[i] - x[j]
+            dx = dx - L * round(dx/2)
+
+            dy = y[i] - y[j]
+            dy = dy - L * round(dy/2)
+
+            dz = z[i] - z[j]
+            dz = dz - L * round(dz/2)
+
+            dr2 = (dx*dx) + (dy*dy) + (dz*dz)
+            if dr2 < ((rcut + skin)(rcut + skin))/ (rcut2):
+                nonlist[i] = nonlist[i] + 1
+                nonlist[j] = nonlist[j] + 1
+                nlist[nonlist[i], i] = j
+                nlist[nonlist[j], j] = i
+
+#--------------------------------------------------------------------------
+# Checking the Neighbor List and the positions 
+#--------------------------------------------------------------------------  
+@jit(nopython=True)  
+def checkList():
+    displ = 0
+    for i in range(N):
+        dx = x[i]-xold[i]
+        displ = max(displ, abs(dx))
+
+        dy = y[i] - yold[i]
+        displ = max(displ, abs(dy))
+
+        dz = z[i] - zold[i]
+        displ = max(displ, abs(dz))
+
+        if displ > (skin/2):        #make skin rcut, becuase this is what 
+            nList()
+
 
 #--------------------------------------------------------------------------
 #Density Modulation
 #--------------------------------------------------------------------------
 #@jit (nopython=True)
-def density_mod(x, y, z):
+def density_mod(z):
     for i in range(N):
         ibin = z[i] / binwidth #the number of bins
         #print("ibin:", ibin)
@@ -403,6 +461,8 @@ fx = np.zeros(N)
 fy = np.zeros(N)
 fz = np.zeros(N)
 numParticle = np.zeros(N)
+densities_final_list = np.zeros(N)
+particle_sizes = np.zeros(N)
 
 # opening energy file
 pe_file = "energy.txt"
@@ -433,9 +493,11 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
     velscaling(vx,vy,vz);
     #TempBC(vx,vy,vz,fx,fy,fz); 
+
     if istep % density_sample == 0:
-        density_mod(x,y,z)
+        density_mod(z)
         for islab in range(int(nbins)):
+            densities_final_list[islab] = numParticle[islab]/Volbin
             fp1.write("%s %s \n"%(islab, numParticle[islab]/Volbin))
             fp1.flush();
     #exit()
@@ -474,4 +536,12 @@ plt.xlim([100, xmax])
 plt.xlabel('time')
 plt.ylabel('potential energy')
 plt.show()
+
+
 #--------------------------------------------------------------------------
+#   Plotting potential energy vs time
+#--------------------------------------------------------------------------
+plt.plot (densities_final_list, z)
+plt.xlabel("Distance")
+plt.ylabel("Density")
+plt.show()

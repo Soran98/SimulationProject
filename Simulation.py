@@ -369,13 +369,15 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
 #--------------------------------------------------------------------------
 #Density Modulation
 #--------------------------------------------------------------------------
-@jit (nopython=True)
+#@jit (nopython=True)
 def density_mod(x, y, z):
     for i in range(N):
         ibin = z[i] / binwidth #the number of bins
+        #print("ibin:", ibin)
         #numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
-        
-
+        for j in range(int(ibin)):
+        #for j in range(N):
+            numParticle[j] = numParticle[j] + 1
 
 #=========================================================================
 #=========================================================================
@@ -436,6 +438,7 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
         for islab in range(int(nbins)):
             fp1.write("%s %s \n"%(islab, numParticle[islab]/Volbin))
             fp1.flush();
+    #exit()
 
     if(istep%100==0):
         K = KE(vx,vy,vz)

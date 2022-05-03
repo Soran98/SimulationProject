@@ -11,44 +11,50 @@ import matplotlib.pyplot as plt
 
 
 # Simulation parameters
-N = 10000  # number of cells
-rho = 0.8  # density
-T = 1  # tempurature 
-dt = 0.005
-kb = 1      #this is 1.381 * 10**-23 refer to power check
-m = 1  #temporary 
-minDist = 0.9 # the minimum distance each 
-iseed = 10
-nsteps = 20000 #how many steps 
+# N = 10000  # number of cells
+# rho = 0.8  # density
+# T = 1  # tempurature 
+# dt = 0.005
+# kb = 1      #this is 1.381 * 10**-23 refer to power check
+# m = 1  #temporary 
+# minDist = 0.9 # the minimum distance each 
+# iseed = 10
+# nsteps = 20000 #how many steps 
 
 
 
 # Box length
-vol = N/rho # volume
-L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-Lx = L
-Ly = L
-Lz = (vol / (Lx*Ly)) - 1.4
-print("L = ", L)
+# vol = N/rho # volume
+# L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
+# print(L)
+# Lz = L
+# Lx = np.sqrt(N/(rho*Lz))
+# Ly = Lx
+# print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 
-#neighbors stuff
-skin = 0.3
+# #neighbors stuff
+# skin = 0.3
 
-nbins = L 
-binwidth = Lz / nbins
-Volbin = Lx * Ly * binwidth
+# nbins = 20 
+# binwidth = Lz / nbins
+# Volbin = Lx * Ly * binwidth
 
-density_sample = 1000
+# density_sample = 1000
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
+bulk = 0
+if bulk == 1: 
+    epsilon_w = 0
+else:
+    epsilon_w = 1
 epsilon = 1
 sigma = 1
 rcut = 2.5
-sigma12 = sigma ** 12
-sigma6 = sigma ** 6
+# sigma12 = sigma ** 12
+# sigma6 = sigma ** 6
 rcut2 = rcut * rcut
 rcutsq = rcut2
-offset = 4.0 * epsilon* (sigma12 / rcut**12 - sigma6 / rcut**6)
+offset = 4.0 * epsilon* (1 / rcut**12 - 1 / rcut**6)
 print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
 #--------------------------------------------------------------------------
 
@@ -66,6 +72,13 @@ def Force(x,y,z,fx,fy,fz):
 
     for i in range(N):
         for j in range(i+1, N):
+            sigmaij = 0.5*(sigmaSizes[i] + sigmaSizes[j])
+            sigmaij2 = sigmaij * sigmaij
+            sigmaij4 = sigmaij2 * sigmaij2
+            sigmaij6 = sigmaij4 * sigmaij2
+            sigmaij12 = sigmaij6 * sigmaij2 
+            
+
             dx = x[i] - x[j]
             dx = dx - Lx * np.round(dx/Lx) # minimum image distance
 
@@ -73,19 +86,20 @@ def Force(x,y,z,fx,fy,fz):
             dy = dy - Ly * np.round(dy/Ly)
 
             dz = z[i] - z[j]
-            #dz = dz - Lz * np.round(dz/Lz)
+            if bulk == 1:
+                dz = dz - Lz * np.round(dz/Lz) #for bulk simulation (if wall is off)
 
             dr2 = dx**2 + dy**2 + dz**2
             #inv = inverse
-            if dr2 < rcutsq:
+            if dr2 < rcutsq * sigmaij2:
                 dr2inv = 1/dr2
                 dr6inv = dr2inv * dr2inv * dr2inv
                 dr12inv = dr6inv * dr6inv
 
-                du = 4 * epsilon * ((sigma12 * dr12inv) - (sigma6 * dr6inv)) - offset
+                du = 4 * epsilon * ((sigmaij12 * dr12inv) - (sigmaij6 * dr6inv)) - offset
                 u = u + du 
 
-                wij = 4 * epsilon * (12 * sigma12 * dr12inv - 6 * sigma6 * dr6inv)
+                wij = 4 * epsilon * (12 * sigmaij12 * dr12inv - 6 * sigmaij6 * dr6inv)
                 wij = wij * dr2inv
                 fx[i] = fx[i] + wij * dx
                 fy[i] = fy[i] + wij * dy
@@ -113,6 +127,8 @@ def InitConf(minDist):
             x_t, y_t, z_t = x_rand(L) # trial position
             iflag = 1 # flag for accepting trial position in x, y, z list if dist > minDist
             for j in range(i): # look for all possible pairs
+                sigmaij = 0.5*(sigmaSizes[i] + sigmaSizes[j])
+                sigmaij2 = sigmaij * sigmaij
                 dx = x[j] - x_t
                 dx = dx - L * np.round(dx/L) # minimun image distance
 
@@ -123,7 +139,7 @@ def InitConf(minDist):
                 dz = dz - L * np.round(dz/L)
 
                 dr2 = dx**2 + dy**2 + dz**2
-                if(dr2 < minDist*minDist):
+                if(dr2/sigmaij2 < minDist*minDist):
                     iflag = 0 # iflag=0 means don't accept the trial position: see later lines
                     break
             if(iflag==1): # this line will reach (i) by above break statement or (ii) after finishing above for loop
@@ -159,7 +175,6 @@ def Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold):
         x[i]= x[i] + vx[i]*dt + 0.5*(fxold[i]/m)*(dt2)    
         y[i]= y[i] + vy[i]*dt + 0.5*(fyold[i]/m)*(dt2)   
         z[i]= z[i] + vz[i]*dt + 0.5*(fzold[i]/m)*(dt2)
-
     pe = Force(x,y,z,fx,fy,fz); 
     pe_wall = force_wall(x,y,z,fx,fy,fz);   
 
@@ -262,31 +277,28 @@ def copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold):
 #--------------------------------------------------------------------------
 # Build the wall
 #--------------------------------------------------------------------------
-Lzwall = -.7
-Rzwall = L + .7
-epsilon_w = 1
 @jit (nopython=True)
 def force_wall(x, y, z, fx, fy, fz):
     u = 0.0
     for i in range(N):
-        
+        sigma = sigmaSizes[i]
         #left wall
         dz = z[i] - Lzwall
         #print(dz, z[i], Lzwall)
         #exit()
         du = epsilon_w * (sigma/dz) ** 9
         u = u + du
-        wij = 9 * epsilon * (sigma/dz) ** 9
+        wij = 9 * epsilon_w * (sigma/dz) ** 9
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz
    
     for i in range(N):
-
-        #left wall
+        sigma = sigmaSizes[i]
+        #right wall
         dz = z[i] - Rzwall
         du = epsilon_w * (sigma/abs(dz)) ** 9
         u = u + du
-        wij = 9 * epsilon * (sigma/abs(dz)) ** 9
+        wij = 9 * epsilon_w * (sigma/abs(dz)) ** 9
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz 
     
@@ -330,7 +342,7 @@ def read_input():
                 print("RCUT = ", rcut)
                 rcutsq = rcut * rcut
                 print("RCUTSQ = ", rcutsq)
-                offset = 4.0*epsilon*(sigma12/rcut**12 - sigma6/rcut**6)
+                offset = 4.0*epsilon*(1/rcut**12 - 1/rcut**6)
                 print("offset = ", offset)
             if(a == "DT"): 
                 dt = float(value)
@@ -369,9 +381,15 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
 #--------------------------------------------------------------------------
 #Polydispersity 
 #--------------------------------------------------------------------------
-# def fixParticleSizes():
-# for i in range(N):
-#     particle_sizes
+# def Polydisp():
+#     for i in range(N):
+#         particle_sizes[i] = (1/np.sqrt(3)) * ((max_size - min_size) / (max_size + min_size))
+#     return particle_sizes
+
+def randomSigma():
+    for i in range(N):
+        sigmaSizes[i] = random.uniform(sigMin, sigMax)
+#uniform distributaion
 
 
 #--------------------------------------------------------------------------
@@ -430,12 +448,20 @@ def checkList():
 #@jit (nopython=True)
 def density_mod(z):
     for i in range(N):
-        ibin = z[i] / binwidth #the number of bins
-        #print("ibin:", ibin)
-        #numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
-        for j in range(int(ibin)):
+        if bulk == 1:
+            z1 = z[i] - Lz * round(z[i]/(2*Lz))
+        else:
+            z1 = z[i]
+        
+        ibin = int(z1 / binwidth) #the number of bins
+        #if ibin > 19:
+        #    print(ibin, z[i], z1)
+        #print("i: ", i, "ibin:", ibin, "z", z[i], "x", x[i], "y", y[i], "L: ", L, "Lx:", Lx, "Ly", Ly)
+        numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
+        
+        #for j in range(ibin):
         #for j in range(N):
-            numParticle[j] = numParticle[j] + 1
+         #   numParticle[j] = numParticle[j] + 1
 
 #=========================================================================
 #=========================================================================
@@ -445,7 +471,29 @@ def density_mod(z):
 
 read_input() # reading input file. 
 
+vol = N/rho # volume
+L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
+print(L)
+Lz = L
+Lx = np.sqrt(N/(rho*Lz))
+Ly = Lx
+print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
+#make if statement to end program if Lx and Ly are smaller than rcut*2
 
+Lzwall = -.7
+Rzwall = L + .7
+m = 1
+kb = 1
+
+#neighbors stuff
+skin = 0.3
+
+nbins = 50
+binwidth = Lz / nbins
+Volbin = Lx * Ly * binwidth
+totalLength = binwidth * nbins
+
+density_sample = 1000
 
 # Initialization of arrays
 fxold = np.zeros(N)
@@ -460,10 +508,15 @@ z = np.zeros(N)
 fx = np.zeros(N)
 fy = np.zeros(N)
 fz = np.zeros(N)
-numParticle = np.zeros(N)
+numParticle = np.zeros(nbins)
 densities_final_list = np.zeros(N)
-particle_sizes = np.zeros(N)
+sigmaSizes = np.zeros(N)
+sigma12 = np.zeros(N)
+sigma6 = np.zeros(N)
+offset = np.zeros(N)
 
+count = 0
+ 
 # opening energy file
 pe_file = "energy.txt"
 fp = open(pe_file, mode="w")
@@ -472,9 +525,11 @@ fp.write("# istep   pe  t_kin   ke\n")
 #opening density file
 density_file = "density.txt"
 fp1 = open(density_file, mode="w")
-
+print("L: ", L, "Lx:", Lx, "Ly", Ly)
 
 random.seed(iseed) # to accept seed for random number generator: Must be at the top of MaIn function
+
+randomSigma()
 
 InitConf(minDist) #initial position  
 InitVel()      #initial velocity
@@ -482,8 +537,8 @@ InitVel()      #initial velocity
 Force(x,y,z,fx,fy,fz) # calling Force first time
 force_wall(x,y,z,fx,fy,fz)
 
-copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first time
 
+copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first time
 
 start = time.time()
 
@@ -495,12 +550,14 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     #TempBC(vx,vy,vz,fx,fy,fz); 
 
     if istep % density_sample == 0:
+        count = count + 1
         density_mod(z)
-        for islab in range(int(nbins)):
+        for islab in range(nbins):
             densities_final_list[islab] = numParticle[islab]/Volbin
-            fp1.write("%s %s \n"%(islab, numParticle[islab]/Volbin))
-            fp1.flush();
-    #exit()
+            #fp1.write("%s %s \n"%(islab, densities_final_list[islab]))
+            #fp1.flush();
+            
+   # exit()
 
     if(istep%100==0):
         K = KE(vx,vy,vz)
@@ -509,7 +566,6 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
         fp.flush();
         print("istep, pe ", istep, pe )
 fp.close()
-fp1.close()
 # SIMULATION ITERATION ENDS HERE
 
 end = time.time()
@@ -518,6 +574,10 @@ print("Elapsed time (seconds) = ", end- start)
 print("------------------------------")
 
 
+for islab in range(nbins):
+    fp1.write("%s %s \n"%((islab * binwidth + (binwidth/2)), densities_final_list[islab]/count))
+    fp1.flush()
+fp1.close()
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
@@ -541,7 +601,10 @@ plt.show()
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-plt.plot (densities_final_list, z)
+data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
+x1 = data1[0]
+y1 = data1[1]
+plt.plot (x1, y1, '-o')
 plt.xlabel("Distance")
 plt.ylabel("Density")
 plt.show()

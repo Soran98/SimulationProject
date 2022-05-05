@@ -88,11 +88,13 @@ def Force(x,y,z,fx,fy,fz):
             dz = z[i] - z[j]
             if bulk == 1:
                 dz = dz - Lz * np.round(dz/Lz) #for bulk simulation (if wall is off)
-
+            
             dr2 = dx**2 + dy**2 + dz**2
+            print("dr2:", dr2, "dx:", dx, "dy:", dy, "dz:", dz, "sigmaij2", sigmaij2)
             #inv = inverse
+            
             if dr2 < rcutsq * sigmaij2:
-                dr2inv = 1/dr2
+                dr2inv = 1.0 / dr2
                 dr6inv = dr2inv * dr2inv * dr2inv
                 dr12inv = dr6inv * dr6inv
 
@@ -397,13 +399,9 @@ def randomSigma():
 #--------------------------------------------------------------------------
 @jit(nopython=True)
 def nList(): 
-    for i in range(N):
-        xold[i] = x[i] 
-        yold[i] = y[i] 
-        zold[i] = z[i] 
 
     
-    non[i] = 0               #number of neighbors 
+    nonList = []             #number of neighbors 
     for i in range(N):
         for j in range(i+1, N):
             dx =x[i] - x[j]
@@ -417,10 +415,10 @@ def nList():
 
             dr2 = (dx*dx) + (dy*dy) + (dz*dz)
             if dr2 < ((rcut + skin)(rcut + skin))/ (rcut2):
-                nonlist[i] = nonlist[i] + 1
-                nonlist[j] = nonlist[j] + 1
-                nlist[nonlist[i], i] = j
-                nlist[nonlist[j], j] = i
+                nonList[i] = nonList[i] + 1
+                nonList[j] = nonList[j] + 1
+                nlist[nonList[i], i] = j
+                nlist[nonList[j], j] = i
 
 #--------------------------------------------------------------------------
 # Checking the Neighbor List and the positions 
@@ -461,7 +459,7 @@ def density_mod(z):
         
         #for j in range(ibin):
         #for j in range(N):
-         #   numParticle[j] = numParticle[j] + 1
+        #   numParticle[j] = numParticle[j] + 1
 
 #=========================================================================
 #=========================================================================
@@ -473,7 +471,6 @@ read_input() # reading input file.
 
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-print(L)
 Lz = L
 Lx = np.sqrt(N/(rho*Lz))
 Ly = Lx
@@ -484,6 +481,9 @@ Lzwall = -.7
 Rzwall = L + .7
 m = 1
 kb = 1
+
+sigMin = 0.8
+sigMax = 1.2
 
 #neighbors stuff
 skin = 0.3
@@ -514,6 +514,7 @@ sigmaSizes = np.zeros(N)
 sigma12 = np.zeros(N)
 sigma6 = np.zeros(N)
 offset = np.zeros(N)
+nlist = np.zeros(N)
 
 count = 0
  
@@ -535,6 +536,7 @@ InitConf(minDist) #initial position
 InitVel()      #initial velocity
 
 Force(x,y,z,fx,fy,fz) # calling Force first time
+
 force_wall(x,y,z,fx,fy,fz)
 
 

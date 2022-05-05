@@ -90,7 +90,7 @@ def Force(x,y,z,fx,fy,fz):
                 dz = dz - Lz * np.round(dz/Lz) #for bulk simulation (if wall is off)
             
             dr2 = dx**2 + dy**2 + dz**2
-            print("dr2:", dr2, "dx:", dx, "dy:", dy, "dz:", dz, "sigmaij2", sigmaij2)
+            #print("dr2:", dr2, "dx:", dx, "dy:", dy, "dz:", dz, "sigmaij2", sigmaij2)
             #inv = inverse
             
             if dr2 < rcutsq * sigmaij2:
@@ -288,9 +288,9 @@ def force_wall(x, y, z, fx, fy, fz):
         dz = z[i] - Lzwall
         #print(dz, z[i], Lzwall)
         #exit()
-        du = epsilon_w * (sigma/dz) ** 9
+        du = epsilon_w * (sigma/abs(dz)) ** 9
         u = u + du
-        wij = 9 * epsilon_w * (sigma/dz) ** 9
+        wij = 9 * epsilon_w * (sigma/abs(dz)) ** 9
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz
    
@@ -387,8 +387,8 @@ def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
 #     for i in range(N):
 #         particle_sizes[i] = (1/np.sqrt(3)) * ((max_size - min_size) / (max_size + min_size))
 #     return particle_sizes
-
-def randomSigma():
+@jit(nopython=True)
+def randomSigma(sigmaSizes):
     for i in range(N):
         sigmaSizes[i] = random.uniform(sigMin, sigMax)
 #uniform distributaion
@@ -447,14 +447,14 @@ def checkList():
 def density_mod(z):
     for i in range(N):
         if bulk == 1:
-            z1 = z[i] - Lz * round(z[i]/(2*Lz))
+            z1 = z[i] - Lz * round(z[i]/Lz - 0.5)
         else:
             z1 = z[i]
         
         ibin = int(z1 / binwidth) #the number of bins
         #if ibin > 19:
         #    print(ibin, z[i], z1)
-        #print("i: ", i, "ibin:", ibin, "z", z[i], "x", x[i], "y", y[i], "L: ", L, "Lx:", Lx, "Ly", Ly)
+        print("i: ", i, "ibin:", ibin, "z", z[i], "x", x[i], "y", y[i], "L: ", L, "Lx:", Lx, "Ly", Ly)
         numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
         
         #for j in range(ibin):
@@ -477,8 +477,8 @@ Ly = Lx
 print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 #make if statement to end program if Lx and Ly are smaller than rcut*2
 
-Lzwall = -.7
-Rzwall = L + .7
+Lzwall = -.5
+Rzwall = L + .5
 m = 1
 kb = 1
 
@@ -489,7 +489,7 @@ sigMax = 1.2
 skin = 0.3
 
 nbins = 50
-binwidth = Lz / nbins
+binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 
@@ -513,7 +513,7 @@ densities_final_list = np.zeros(N)
 sigmaSizes = np.zeros(N)
 sigma12 = np.zeros(N)
 sigma6 = np.zeros(N)
-offset = np.zeros(N)
+#offset = np.zeros(N)
 nlist = np.zeros(N)
 
 count = 0
@@ -530,7 +530,7 @@ print("L: ", L, "Lx:", Lx, "Ly", Ly)
 
 random.seed(iseed) # to accept seed for random number generator: Must be at the top of MaIn function
 
-randomSigma()
+randomSigma(sigmaSizes)
 
 InitConf(minDist) #initial position  
 InitVel()      #initial velocity

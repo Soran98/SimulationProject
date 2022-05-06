@@ -1,16 +1,22 @@
-# import pandas as pd
-# import matplotlib.pyplot as plt
-# import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 
-# # de_file = "density.txt"
-# # data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
-# # x1 = data[0]
-# # y1 = data[1]
-# # plt.plot (x1, y1)
-# # plt.xlabel("Distance")
-# # plt.ylabel("Density")
-# # plt.show()
+de_file = "density BC Wall.txt"
+de_file2 = "density VelScaling Wall.txt"
+data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
+data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
+x1 = data[0]
+y1 = data[1]
+x2 = data2[0]
+y2 = data2[1]
+plt.plot (x1, y1, label='BC')
+plt.plot(x2, y2, label='VelScaling')
+plt.xlabel("Distance")
+plt.ylabel("e")
+leg = plt.legend();
+plt.show()
 
 # sigma = 2
 # sigma1 = 1
@@ -45,5 +51,3 @@
 #     for j in range(z):
 #         dz = z[i] - z[j]
 # print(dz) 
-
-print(2.50 * 2.50)

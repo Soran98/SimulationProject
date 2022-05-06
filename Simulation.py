@@ -41,8 +41,12 @@ import matplotlib.pyplot as plt
 
 # density_sample = 1000
 #--------------------------------------------------------------------------
-#Lennard-Jones potential parameters
+#Tempurate and wall control method
+velScale = 0
 bulk = 0
+
+#--------------------------------------------------------------------------
+#Lennard-Jones potential parameters
 if bulk == 1: 
     epsilon_w = 0
 else:
@@ -122,6 +126,7 @@ def x_rand(L):
 #--------------------------------------------------------------------------
 #  function to generate randomc ocnfiguration s.t. distance between 2 particles > minDist
 #--------------------------------------------------------------------------
+
 def InitConf(minDist):
     x[0], y[0], z[0] = x_rand(L) # choose an arbitrary position for the very 1st particle
     i = 0
@@ -362,37 +367,50 @@ def read_input():
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
 @jit(nopython=True)
-def TempBC(vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
+def TempBC(x, y, z, vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brown-Clarke
     free = (N-1) * 3
     dt_2 = dt / 2.0
     K = 0.0
-
+    #print("vx:", vx, "fx:", fx)
+    #print("free:", free,"dt_2:", dt_2)
     for i in range(N):
-        vxi = (vx[i] + dt_2 * fx[i]) / m
-        vyi = (vy[i] + dt_2 * fy[i]) / m
-        vzi = (vz[i] + dt_2 * fz[i]) / m 
-        K = K + vxi * vxi + vyi * vyi + vzi * vzi
+       # print("vx:", vx[i], "fx:", fx[i])
+        vxi = vx[i] + dt_2 * fx[i] / m
+        vyi = vy[i] + dt_2 * fy[i] / m
+        vzi = vz[i] + dt_2 * fz[i] / m 
+        #print("vxi:",vxi,"vyi:",vyi,"vzi:",vzi)
+        K = K + ((vxi * vxi) + (vyi * vyi) + (vzi * vzi))
     
     sysTemp = m * K / free #The system tempurature
-    chi = np.sqrt(sysTemp / T)
+    chi = np.sqrt(T / sysTemp)
+    #print("sysTemp:", sysTemp, "chi:", chi, "K:", K)
 
     for i in range(N):
-        vx[i] = (vx[i] * ( 2.0 * chi - 1.0) + chi * dt * fx[i]) / m 
-        vy[i] = (vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i]) / m 
-        vz[i] = (vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i]) / m 
+        vx[i] = vx[i] * ( 2.0 * chi - 1.0) + chi * dt * fx[i] / m 
+        vy[i] = vy[i] * ( 2.0 * chi - 1.0) + chi * dt * fy[i] / m 
+        vz[i] = vz[i] * ( 2.0 * chi - 1.0) + chi * dt * fz[i] / m 
+
+    #updating postions with new velocity
+    for i in range(N):
+        x[i] = x[i] + dt * vx[i]
+        y[i] = y[i] + dt * vy[i]
+        z[i] = z[i] + dt * vz[i]
+
+    pe = Force(x,y,z,fx,fy,fz); 
+    pe_wall = force_wall(x,y,z,fx,fy,fz);   
+
+    peTotal = pe + pe_wall
+
+    return peTotal
+        
 #--------------------------------------------------------------------------
 #Polydispersity 
 #--------------------------------------------------------------------------
-# def Polydisp():
-#     for i in range(N):
-#         particle_sizes[i] = (1/np.sqrt(3)) * ((max_size - min_size) / (max_size + min_size))
-#     return particle_sizes
+
 @jit(nopython=True)
 def randomSigma(sigmaSizes):
     for i in range(N):
         sigmaSizes[i] = random.uniform(sigMin, sigMax)
-#uniform distributaion
-
 
 #--------------------------------------------------------------------------
 # Creating Neighbors List  
@@ -439,12 +457,21 @@ def checkList():
         if displ > (skin/2):        #make skin rcut, becuase this is what 
             nList()
 
+#--------------------------------------------------------------------------
+#Check if Z molecule left range of wall
+#--------------------------------------------------------------------------
+def boundaryZcheck(z):
+    for i in range(N):
+        if z[i] > (Lz + np.absolute(Lzwall) + Rzwall):
+            print("Z axis molecule went past the wall")
+            exit()
+
 
 #--------------------------------------------------------------------------
 #Density Modulation
 #--------------------------------------------------------------------------
-#@jit (nopython=True)
-def density_mod(z):
+@jit (nopython=True)
+def density_mod(z, numParticle):
     for i in range(N):
         if bulk == 1:
             z1 = z[i] - Lz * round(z[i]/Lz - 0.5)
@@ -454,7 +481,7 @@ def density_mod(z):
         ibin = int(z1 / binwidth) #the number of bins
         #if ibin > 19:
         #    print(ibin, z[i], z1)
-        print("i: ", i, "ibin:", ibin, "z", z[i], "x", x[i], "y", y[i], "L: ", L, "Lx:", Lx, "Ly", Ly)
+        #print("i: ", i, "ibin:", ibin, "z", z[i], "x", x[i], "y", y[i], "L: ", L, "Lx:", Lx, "Ly", Ly)
         numParticle[ibin] = numParticle[ibin] + 1 #the number of particles in a bin
         
         #for j in range(ibin):
@@ -530,30 +557,41 @@ print("L: ", L, "Lx:", Lx, "Ly", Ly)
 
 random.seed(iseed) # to accept seed for random number generator: Must be at the top of MaIn function
 
+print("Calling randomSigma")
 randomSigma(sigmaSizes)
 
+
+print("Calling InitConf")
 InitConf(minDist) #initial position  
+print("Calling InitVel")
 InitVel()      #initial velocity
 
+print("Calling Force")
 Force(x,y,z,fx,fy,fz) # calling Force first time
 
+print("Calling force_wall")
 force_wall(x,y,z,fx,fy,fz)
 
-
+print("Calling copy_fx_to_fxold")
 copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first time
 
 start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
-    pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
-    copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
-    velscaling(vx,vy,vz);
-    #TempBC(vx,vy,vz,fx,fy,fz); 
+    if velScale == 1:
+        pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+        copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
+        velscaling(vx,vy,vz);
+    else:
+    #print("vx:", vx[istep], "fx:", fx[istep])
+        pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
+
+    #boundaryZcheck(z);
 
     if istep % density_sample == 0:
         count = count + 1
-        density_mod(z)
+        density_mod(z, numParticle)
         for islab in range(nbins):
             densities_final_list[islab] = numParticle[islab]/Volbin
             #fp1.write("%s %s \n"%(islab, densities_final_list[islab]))

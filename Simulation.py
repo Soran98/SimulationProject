@@ -10,36 +10,6 @@ from numba import jit
 import matplotlib.pyplot as plt
 
 
-# Simulation parameters
-# N = 10000  # number of cells
-# rho = 0.8  # density
-# T = 1  # tempurature 
-# dt = 0.005
-# kb = 1      #this is 1.381 * 10**-23 refer to power check
-# m = 1  #temporary 
-# minDist = 0.9 # the minimum distance each 
-# iseed = 10
-# nsteps = 20000 #how many steps 
-
-
-
-# Box length
-# vol = N/rho # volume
-# L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-# print(L)
-# Lz = L
-# Lx = np.sqrt(N/(rho*Lz))
-# Ly = Lx
-# print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
-
-# #neighbors stuff
-# skin = 0.3
-
-# nbins = 20 
-# binwidth = Lz / nbins
-# Volbin = Lx * Ly * binwidth
-
-# density_sample = 1000
 #--------------------------------------------------------------------------
 #Tempurate and wall control method
 velScale = 0
@@ -118,6 +88,7 @@ def Force(x,y,z,fx,fy,fz):
 #------------------------------------------------------------------------
 #  generate 3 random numbers between 0 and L
 #--------------------------------------------------------------------------
+@jit(nopython=True)
 def x_rand(L):
     x = random.uniform(0, L)
     y = random.uniform(0, L)
@@ -126,8 +97,8 @@ def x_rand(L):
 #--------------------------------------------------------------------------
 #  function to generate randomc ocnfiguration s.t. distance between 2 particles > minDist
 #--------------------------------------------------------------------------
-
-def InitConf(minDist):
+@jit(nopython=True)
+def InitConf(minDist, sigmaSizes, x, y, z):
     x[0], y[0], z[0] = x_rand(L) # choose an arbitrary position for the very 1st particle
     i = 0
     while i < N:
@@ -151,6 +122,7 @@ def InitConf(minDist):
                     break
             if(iflag==1): # this line will reach (i) by above break statement or (ii) after finishing above for loop
                 x[i] = x_t; y[i] = y_t; z[i] = z_t; i = i + 1
+                print("Particle number ", i, "generated")
     #print(x[0],x[2],x[70])
 #--------------------------------------------------------------------------
 #  function to calculate distance of 2 particles (x1,y1,z1) and (x2,y2,z2)
@@ -498,7 +470,7 @@ read_input() # reading input file.
 
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-Lz = L
+Lz = 16
 Lx = np.sqrt(N/(rho*Lz))
 Ly = Lx
 print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
@@ -562,7 +534,7 @@ randomSigma(sigmaSizes)
 
 
 print("Calling InitConf")
-InitConf(minDist) #initial position  
+InitConf(minDist, sigmaSizes, x, y, z) #initial position  
 print("Calling InitVel")
 InitVel()      #initial velocity
 

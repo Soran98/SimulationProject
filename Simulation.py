@@ -8,30 +8,7 @@ import numpy as np
 import sys, time
 from numba import jit
 import matplotlib.pyplot as plt
-
-
-#--------------------------------------------------------------------------
-#Tempurate and wall control method
-velScale = 0
-bulk = 0
-
-#--------------------------------------------------------------------------
-#Lennard-Jones potential parameters
-if bulk == 1: 
-    epsilon_w = 0
-else:
-    epsilon_w = 1
-epsilon = 1
-sigma = 1
-rcut = 2.5
-# sigma12 = sigma ** 12
-# sigma6 = sigma ** 6
-rcut2 = rcut * rcut
-rcutsq = rcut2
-offset = 4.0 * epsilon* (1 / rcut**12 - 1 / rcut**6)
-print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
-#--------------------------------------------------------------------------
-
+import pandas as pd
 
 #--------------------------------------------------------------------------
 #  creating of Force
@@ -288,9 +265,12 @@ def force_wall(x, y, z, fx, fy, fz):
 #--------------------------------------------------------------------------
 def read_input():
 
-    global N, rho, L, Lx, Ly, Lz
+    global N, rho, L, Lx, Ly, Lz, epsilon
     global T, rcut, rcutsq, offset, dt
     global iseed, nsteps, minDist
+    global sigMin, sigMax, m, kb, skin
+    global nbins, sigma, velScale, bulk
+    
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -316,10 +296,14 @@ def read_input():
             if(a == "TEMP"): 
                 T = float(value)
                 print("TEMP = ", T)
+            if(a == "epsilon"):
+                epsilon = int(value)
+                print("Epsilon = ", value)
             if(a == "RCUT"): 
                 rcut = float(value)
                 print("RCUT = ", rcut)
                 rcutsq = rcut * rcut
+                rcut2 = rcut * rcut
                 print("RCUTSQ = ", rcutsq)
                 offset = 4.0*epsilon*(1/rcut**12 - 1/rcut**6)
                 print("offset = ", offset)
@@ -335,6 +319,46 @@ def read_input():
             if(a == "MIN-DIST"): 
                 minDist = float(value)
                 print("MIN-DIST = ", minDist)
+            if(a == "M"):
+                m = float(value)
+                print("Mass = ", value)
+            if(a == "kb"):
+                kb = float(value)
+                print("kb = ", value)
+            if(a == "sigMin"):
+                sigMin = float(value)
+                print("sigMin = ", value)
+            if(a == "sigMax"):
+                sigMax = float(value)
+                print("sigMax = ", value)
+            if(a == "skin"):
+                skin = float(value)
+                print("Skin = ", value)
+            if(a == "nbins"):
+                nbins = int(value)
+                print("nbins = ", value)
+                binwidth = Lz / nbins
+                Volbin = Lx * Ly * binwidth
+                totalLength = binwidth * nbins
+            if(a == "sigma"):
+                sigma = float(value)
+                print("Sigma = ", value)
+            if(a == "velScale"):
+                velScale = int(value)
+                if velScale == 1:
+                    print("Velocity Scaling is on")
+                else:
+                    print("Brown Clarke Thermostat is on")
+            if(a == "BULK"):
+                bulk = int(value)
+                if bulk == 1: 
+                    epsilon_w = 0
+                else:
+                    epsilon_w = 1
+                if bulk == 1:
+                    print("Bulk system enabled")
+                else:
+                    print("Wall is enabled")
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -465,8 +489,11 @@ def density_mod(z, numParticle):
 #  MAIN fnction to call all functiona as required
 #=========================================================================
 #=========================================================================
-
+epsilon = 1
 read_input() # reading input file. 
+
+print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
+
 
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
@@ -477,20 +504,7 @@ print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 #make if statement to end program if Lx and Ly are smaller than rcut*2
 
 Lzwall = -.5
-Rzwall = L + .5
-m = 1
-kb = 1
-
-sigMin = 0.8
-sigMax = 1.2
-
-#neighbors stuff
-skin = 0.3
-
-nbins = 50
-binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
-Volbin = Lx * Ly * binwidth
-totalLength = binwidth * nbins
+Rzwall = Lz + .5
 
 density_sample = 1000
 
@@ -551,6 +565,12 @@ start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
+    
+    if Lx and Ly < rcut * 2:
+        print("Length x or length y were less than rcut * 2")
+        exit()
+
+
     if velScale == 1:
         pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
         copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
@@ -559,7 +579,7 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     #print("vx:", vx[istep], "fx:", fx[istep])
         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
 
-    #boundaryZcheck(z);
+    boundaryZcheck(z);
 
     if istep % density_sample == 0:
         count = count + 1
@@ -593,8 +613,6 @@ fp1.close()
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-import pandas as pd
-import matplotlib.pyplot as plt
 data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
 data = pd.DataFrame(data)
 

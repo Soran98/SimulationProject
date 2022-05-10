@@ -1,12 +1,29 @@
-NPART  1024
+NPART     1024
 
-RHO    1
-TEMP   1.0
-DT     0.005
+RHO       1
+TEMP      1.0
+DT        0.005
 
-RCUT   2.50
+epsilon  1
+
+RCUT      2.50
 
 MIN-DIST  0.88
-SEED    10
+SEED      10
 
-NSTEPS  100000
+NSTEPS    100000
+
+M         1
+kb        1
+
+sigMin     .8
+sigMax    1.2
+
+skin       .3
+
+nbins     50
+
+sigma     1
+
+velScale  0
+BULK      0

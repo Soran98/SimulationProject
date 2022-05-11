@@ -8,7 +8,7 @@ epsilon  1
 
 RCUT      2.50
 
-MIN-DIST  0.85
+MIN-DIST  0.9
 SEED      10
 
 NSTEPS    100000

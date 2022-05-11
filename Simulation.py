@@ -493,11 +493,6 @@ read_input() # reading input file.
 print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
 
 
-binwidth = Lz / nbins
-Volbin = Lx * Ly * binwidth
-totalLength = binwidth * nbins
-
-
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
 Lz = 16
@@ -505,6 +500,10 @@ Lx = np.sqrt(N/(rho*Lz))
 Ly = Lx
 print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 #make if statement to end program if Lx and Ly are smaller than rcut*2
+
+binwidth = Lz / nbins
+Volbin = Lx * Ly * binwidth
+totalLength = binwidth * nbins
 
 Lzwall = -.5
 Rzwall = Lz + .5

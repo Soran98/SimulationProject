@@ -1,7 +1,7 @@
 NPART     1024
 
 RHO       .9
-TEMP      1.2
+TEMP      1.0
 DT        0.005
 
 epsilon  1

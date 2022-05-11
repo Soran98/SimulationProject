@@ -291,8 +291,8 @@ def read_input():
             if(a == "RHO"): 
                 rho = float(value)
                 print("RHO = ", rho)
-                L = np.power(N/rho, 1.0/3.0)
-                Lx = L; Ly=L; Lz=L
+                # L = np.power(N/rho, 1.0/3.0)
+                # Lx = L; Ly=L; Lz=L
             if(a == "TEMP"): 
                 T = float(value)
                 print("TEMP = ", T)

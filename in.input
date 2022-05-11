@@ -1,6 +1,6 @@
 NPART     1024
 
-RHO       .96
+RHO       .95
 TEMP      1.2
 DT        0.005
 
@@ -8,7 +8,7 @@ epsilon  1
 
 RCUT      2.50
 
-MIN-DIST  0.88
+MIN-DIST  0.87
 SEED      10
 
 NSTEPS    100000

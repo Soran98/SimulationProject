@@ -164,7 +164,7 @@ def KE(vx,vy,vz):
 @jit(nopython=True)
 def velscaling(vx,vy,vz):
     K=KE(vx,vy,vz) 
-#K=(3N-4)(1/2)kbT   (3N-4) comes from degrees of freedom and maing sure that the plots dont shift
+    #K=(3N-4)(1/2)kbT   (3N-4) comes from degrees of freedom and maing sure that the plots dont shift
     Tk = (2*K)/(kb*(3*N-4))     #kb is the boltzmann constant
 
     #simulation for temperature=T
@@ -348,10 +348,6 @@ def read_input():
                     print("Brown Clarke Thermostat is on")
             if(a == "BULK"):
                 bulk = int(value)
-                if bulk == 1: 
-                    epsilon_w = 0
-                else:
-                    epsilon_w = 1
                 if bulk == 1:
                     print("Bulk system enabled")
                 else:
@@ -492,6 +488,10 @@ read_input() # reading input file.
 
 print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
 
+if bulk == 1: 
+    epsilon_w = 0
+else:
+    epsilon_w = 1
 
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE

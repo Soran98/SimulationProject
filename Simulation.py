@@ -337,9 +337,6 @@ def read_input():
             if(a == "nbins"):
                 nbins = int(value)
                 print("nbins = ", value)
-                binwidth = Lz / nbins
-                Volbin = Lx * Ly * binwidth
-                totalLength = binwidth * nbins
             if(a == "sigma"):
                 sigma = float(value)
                 print("Sigma = ", value)
@@ -490,9 +487,15 @@ def density_mod(z, numParticle):
 #=========================================================================
 #=========================================================================
 epsilon = 1
+epsilon_w = 0
 read_input() # reading input file. 
 
 print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
+
+
+binwidth = Lz / nbins
+Volbin = Lx * Ly * binwidth
+totalLength = binwidth * nbins
 
 
 vol = N/rho # volume
@@ -567,7 +570,7 @@ start = time.time()
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
     
     if Lx and Ly < rcut * 2:
-        print("Length x or length y were less than rcut * 2")
+        print("\nERROR: Length x or length y were less than rcut * 2")
         exit()
 
 

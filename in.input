@@ -16,8 +16,8 @@ NSTEPS    100000
 M         1
 kb        1
 
-sigMin     .8
-sigMax    1.2
+sigMin    1.0
+sigMax    1.0
 
 skin       .3
 

@@ -562,6 +562,10 @@ totalLength = binwidth * nbins
 
 density_sample = 1000
 
+if Lx or Ly or Lz < rcut * sigMax * 2:
+    print("Lx or Ly were less than rcut * sigMax * 2")
+    exit()
+
 
 # Initialization of arrays
 fxold = np.zeros(N)
@@ -634,8 +638,8 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     else:
     #print("vx:", vx[istep], "fx:", fx[istep])
         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
+        boundaryZcheck(z);
 
-    #boundaryZcheck(z);
 
     if istep % density_sample == 0:
         count = count + 1

@@ -143,7 +143,8 @@ def InitConf(minDist):
                 dy = dy - L * np.round(dy/L)
 
                 dz = z[j] - z_t
-                dz = dz - L * np.round(dz/L)
+                if bulk == 1:
+                    dz = dz - L * np.round(dz/L)
 
                 dr2 = dx**2 + dy**2 + dz**2
                 if(dr2/sigmaij2 < minDist*minDist):

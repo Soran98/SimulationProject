@@ -334,6 +334,7 @@ def read_input():
     global iseed, nsteps, minDist
     global sigMin, sigMax, bulk, Lz
     global wall_neutrality, eql_steps
+    global nbins
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -396,6 +397,9 @@ def read_input():
             if(a == "eql_steps"): 
                 eql_steps = int(value)
                 print("eql_steps = ", eql_steps)
+            if(a == "nbins"): 
+                nbins = int(value)
+                print("nbins = ", nbins)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -568,7 +572,6 @@ kb = 1
 #neighbors stuff
 skin = 0.3
 
-nbins = 50
 binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins

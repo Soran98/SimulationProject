@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 #--------------------------------------------------------------------------
 #Tempurate and wall control method
 velScale = 0
-bulk = 1
+bulk = 0
 
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
@@ -498,7 +498,7 @@ read_input() # reading input file.
 
 vol = N/rho # volume
 L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-Lz = L
+Lz = 16
 Lx = np.sqrt(N/(rho*Lz))
 Ly = Lx
 print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)

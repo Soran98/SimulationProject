@@ -9,10 +9,13 @@ RCUT   2.50
 MIN-DIST  0.80
 SEED    10
 
-NSTEPS  100000
+NSTEPS      100000
+eql_steps   10000
 
 sigMin  0.8
 sigMax  1.2
 
 bulk    0
-Lz      16
+Lz      6
+
+wall_neutrality 0

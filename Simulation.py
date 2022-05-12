@@ -295,7 +295,10 @@ def copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold):
 def force_wall(x, y, z, fx, fy, fz):
     u = 0.0
     for i in range(N):
-        sigma = sigmaSizes[i]
+        if wall_neutrality == 0:
+            sigma = sigmaSizes[i]
+        else:
+            sigma = 1
         #left wall
         dz = z[i] - Lzwall
         #print(dz, z[i], Lzwall)
@@ -307,7 +310,10 @@ def force_wall(x, y, z, fx, fy, fz):
         fz[i] = fz[i] + wij * dz
    
     for i in range(N):
-        sigma = sigmaSizes[i]
+        if wall_neutrality == 0:
+            sigma = sigmaSizes[i]
+        else:
+            simga = 1
         #right wall
         dz = z[i] - Rzwall
         du = epsilon_w * (sigma/abs(dz)) ** 9
@@ -327,6 +333,7 @@ def read_input():
     global T, rcut, rcutsq, offset, dt
     global iseed, nsteps, minDist
     global sigMin, sigMax, bulk, Lz
+    global wall_neutrality, eql_steps
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -383,6 +390,12 @@ def read_input():
             if(a == "Lz"): 
                 Lz = float(value)
                 print("Lz = ", Lz)
+            if(a == "wall_neutrality"): 
+                wall_neutrality = int(value)
+                print("wall_neutrality = ", wall_neutrality)
+            if(a == "eql_steps"): 
+                eql_steps = int(value)
+                print("eql_steps = ", eql_steps)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -640,14 +653,14 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
         boundaryZcheck(z);
 
-
-    if istep % density_sample == 0:
-        count = count + 1
-        density_mod(z, numParticle)
-        for islab in range(nbins):
-            densities_final_list[islab] = numParticle[islab]/Volbin
-            #fp1.write("%s %s \n"%(islab, densities_final_list[islab]))
-            #fp1.flush();
+    if istep > eql_steps:
+        if istep % density_sample == 0:
+            count = count + 1
+            density_mod(z, numParticle)
+            for islab in range(nbins):
+                densities_final_list[islab] = numParticle[islab]/Volbin
+                #fp1.write("%s %s \n"%(islab, densities_final_list[islab]))
+                #fp1.flush();
             
    # exit()
 

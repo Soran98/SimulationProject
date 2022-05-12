@@ -26,4 +26,4 @@ nbins     50
 sigma     1
 
 velScale  0
-BULK      0
+BULK      1

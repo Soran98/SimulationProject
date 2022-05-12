@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 #--------------------------------------------------------------------------
 #Tempurate and wall control method
 velScale = 0
-bulk = 0
+bulk = 1
 
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters

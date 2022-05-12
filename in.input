@@ -2,11 +2,11 @@ NPART  100
 
 RHO    1
 TEMP   1.0
-DT     0.05
+DT     0.005
 
 RCUT   2.50
 
-MIN-DIST  0.9
+MIN-DIST  0.85
 SEED    10
 
 NSTEPS  100000

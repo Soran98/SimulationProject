@@ -290,7 +290,8 @@ def read_input():
 
     global N, rho, L, Lx, Ly, Lz
     global T, rcut, rcutsq, offset, dt
-    global iseed, nsteps, minDist
+    global iseed, nsteps, minDist, sigma
+    global m, kb, sigMax, sigMin, skin, nbins
 
     #infile=sys.argv[1]
     infile = "in.input";

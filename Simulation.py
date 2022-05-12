@@ -559,7 +559,8 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     #print("vx:", vx[istep], "fx:", fx[istep])
         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
 
-    #boundaryZcheck(z);
+    if bulk == 0:
+        boundaryZcheck(z);
 
     if istep % density_sample == 0:
         count = count + 1

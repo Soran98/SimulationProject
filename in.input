@@ -1,12 +1,18 @@
 NPART  100
 
-RHO    0.80
+RHO    .8
 TEMP   1.0
-DT     0.0001
+DT     0.005
 
 RCUT   2.50
 
-MIN-DIST  0.87
+MIN-DIST  0.80
 SEED    10
 
 NSTEPS  100000
+
+sigMin  0.8
+sigMax  1.2
+
+bulk    0
+Lz      6

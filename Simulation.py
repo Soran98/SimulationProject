@@ -9,6 +9,8 @@ import sys, time
 from numba import jit
 import matplotlib.pyplot as plt
 
+epsilon = 1
+sigma = 1
 
 # Simulation parameters
 # N = 10000  # number of cells
@@ -43,23 +45,23 @@ import matplotlib.pyplot as plt
 #--------------------------------------------------------------------------
 #Tempurate and wall control method
 velScale = 0
-bulk = 0
+# bulk = 0
 
 #--------------------------------------------------------------------------
 #Lennard-Jones potential parameters
-if bulk == 1: 
-    epsilon_w = 0
-else:
-    epsilon_w = 1
-epsilon = 1
-sigma = 1
-rcut = 2.5
-# sigma12 = sigma ** 12
-# sigma6 = sigma ** 6
-rcut2 = rcut * rcut
-rcutsq = rcut2
-offset = 4.0 * epsilon* (1 / rcut**12 - 1 / rcut**6)
-print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
+# if bulk == 1: 
+#     epsilon_w = 0
+# else:
+#     epsilon_w = 1
+# epsilon = 1
+# sigma = 1
+# rcut = 2.5
+# # sigma12 = sigma ** 12
+# # sigma6 = sigma ** 6
+# rcut2 = rcut * rcut
+# rcutsq = rcut2
+# offset = 4.0 * epsilon* (1 / rcut**12 - 1 / rcut**6)
+# print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
 #--------------------------------------------------------------------------
 
 
@@ -118,33 +120,34 @@ def Force(x,y,z,fx,fy,fz):
 #------------------------------------------------------------------------
 #  generate 3 random numbers between 0 and L
 #--------------------------------------------------------------------------
-def x_rand(L):
-    x = random.uniform(0, L)
-    y = random.uniform(0, L)
-    z = random.uniform(0, L)
-    return x, y, z
+@jit(nopython=True)
+def x_rand():
+    r1 = random.uniform(0, Lx)
+    r2 = random.uniform(0, Ly)
+    r3 = random.uniform(0, Lz)
+    return r1, r2, r3
 #--------------------------------------------------------------------------
 #  function to generate randomc ocnfiguration s.t. distance between 2 particles > minDist
 #--------------------------------------------------------------------------
-
-def InitConf(minDist):
-    x[0], y[0], z[0] = x_rand(L) # choose an arbitrary position for the very 1st particle
+@jit(nopython=True)
+def InitConf(minDist, sigmaSizes, x, y, z):
+    x[0], y[0], z[0] = x_rand() # choose an arbitrary position for the very 1st particle
     i = 0
     while i < N:
-            x_t, y_t, z_t = x_rand(L) # trial position
+            x_t, y_t, z_t = x_rand() # trial position
             iflag = 1 # flag for accepting trial position in x, y, z list if dist > minDist
             for j in range(i): # look for all possible pairs
                 sigmaij = 0.5*(sigmaSizes[i] + sigmaSizes[j])
                 sigmaij2 = sigmaij * sigmaij
                 dx = x[j] - x_t
-                dx = dx - L * np.round(dx/L) # minimun image distance
+                dx = dx - Lx * np.round(dx/Lx) # minimun image distance
 
                 dy = y[j] - y_t
-                dy = dy - L * np.round(dy/L)
+                dy = dy - Ly * np.round(dy/Ly)
 
                 dz = z[j] - z_t
                 if bulk == 1:
-                    dz = dz - L * np.round(dz/L)
+                    dz = dz - Lz * np.round(dz/Lz)
 
                 dr2 = dx**2 + dy**2 + dz**2
                 if(dr2/sigmaij2 < minDist*minDist):
@@ -152,6 +155,7 @@ def InitConf(minDist):
                     break
             if(iflag==1): # this line will reach (i) by above break statement or (ii) after finishing above for loop
                 x[i] = x_t; y[i] = y_t; z[i] = z_t; i = i + 1
+                print("Particle", i, "generated")
     #print(x[0],x[2],x[70])
 #--------------------------------------------------------------------------
 #  function to calculate distance of 2 particles (x1,y1,z1) and (x2,y2,z2)
@@ -184,7 +188,9 @@ def Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold):
         y[i]= y[i] + vy[i]*dt + 0.5*(fyold[i]/m)*(dt2)   
         z[i]= z[i] + vz[i]*dt + 0.5*(fzold[i]/m)*(dt2)
     pe = Force(x,y,z,fx,fy,fz); 
-    pe_wall = force_wall(x,y,z,fx,fy,fz);   
+    pe_wall = 0.0
+    if bulk == 0:
+        pe_wall = force_wall(x,y,z,fx,fy,fz);   
 
     peTotal = pe + pe_wall
 
@@ -320,6 +326,7 @@ def read_input():
     global N, rho, L, Lx, Ly, Lz
     global T, rcut, rcutsq, offset, dt
     global iseed, nsteps, minDist
+    global sigMin, sigMax, bulk, Lz
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -340,8 +347,8 @@ def read_input():
             if(a == "RHO"): 
                 rho = float(value)
                 print("RHO = ", rho)
-                L = np.power(N/rho, 1.0/3.0)
-                Lx = L; Ly=L; Lz=L
+                # L = np.power(N/rho, 1.0/3.0)
+                # Lx = L; Ly=L; Lz=L
             if(a == "TEMP"): 
                 T = float(value)
                 print("TEMP = ", T)
@@ -364,6 +371,18 @@ def read_input():
             if(a == "MIN-DIST"): 
                 minDist = float(value)
                 print("MIN-DIST = ", minDist)
+            if(a == "sigMin"): 
+                sigMin = float(value)
+                print("sigMin = ", sigMin)
+            if(a == "sigMax"): 
+                sigMax = float(value)
+                print("sigMax = ", sigMax)
+            if(a == "bulk"): 
+                bulk = int(value)
+                print("bulk = ", bulk)
+            if(a == "Lz"): 
+                Lz = float(value)
+                print("Lz = ", Lz)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -398,7 +417,9 @@ def TempBC(x, y, z, vx, vy, vz, fx, fy, fz): #TempBC stands for Tempurature Brow
         z[i] = z[i] + dt * vz[i]
 
     pe = Force(x,y,z,fx,fy,fz); 
-    pe_wall = force_wall(x,y,z,fx,fy,fz);   
+    pe_wall = 0.0
+    if bulk == 0:
+        pe_wall = force_wall(x,y,z,fx,fy,fz);   
 
     peTotal = pe + pe_wall
 
@@ -497,21 +518,39 @@ def density_mod(z, numParticle):
 
 read_input() # reading input file. 
 
+if bulk == 1: 
+    epsilon_w = 0
+else:
+    epsilon_w = 1
+#rcut = 2.5
+# sigma12 = sigma ** 12
+# sigma6 = sigma ** 6
+rcut2 = rcut * rcut
+rcutsq = rcut2
+#offset = 4.0 * epsilon* (1 / rcut**12 - 1 / rcut**6)
+print("LJ parameters: sigma=%s epsilon=%s rcut=%s offset=%s "%(sigma, epsilon, rcut, offset))
+
 vol = N/rho # volume
-L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
-Lz = 16
-Lx = np.sqrt(N/(rho*Lz))
-Ly = Lx
-print("L = ", L, "Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
+
+if bulk == 1:
+    L = np.power(vol, 1 / 3)  # length of the simulation NEED TO CHANGE FOR RECTANGLE
+    Lx = L
+    Ly = L
+    Lz = L
+else: 
+    Lz = Lz
+    Lx = np.sqrt(N/(rho*Lz))
+    Ly = Lx
+print("Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 #make if statement to end program if Lx and Ly are smaller than rcut*2
 
 Lzwall = -.5
-Rzwall = L + .5
+Rzwall = Lz + .5
 m = 1
 kb = 1
 
-sigMin = 0.8
-sigMax = 1.2
+# sigMin = 0.8
+# sigMax = 1.2
 
 #neighbors stuff
 skin = 0.3
@@ -522,6 +561,7 @@ Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 
 density_sample = 1000
+
 
 # Initialization of arrays
 fxold = np.zeros(N)
@@ -547,14 +587,15 @@ nlist = np.zeros(N)
 count = 0
  
 # opening energy file
-pe_file = "energy.txt"
+file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s"%(N, rho, T, sigMin, sigMax, bulk, Lz)
+pe_file = file_tag + "energy.txt"
 fp = open(pe_file, mode="w")
 fp.write("# istep   pe  t_kin   ke\n")
 
 #opening density file
-density_file = "density.txt"
+density_file = file_tag + "density.txt"
 fp1 = open(density_file, mode="w")
-print("L: ", L, "Lx:", Lx, "Ly", Ly)
+#print("L: ", L, "Lx:", Lx, "Ly", Ly)
 
 random.seed(iseed) # to accept seed for random number generator: Must be at the top of MaIn function
 
@@ -563,15 +604,21 @@ randomSigma(sigmaSizes)
 
 
 print("Calling InitConf")
-InitConf(minDist) #initial position  
+InitConf(minDist, sigmaSizes, x, y, z) #initial position  
+plt.figure()
+plt.scatter(x,y)
+plt.scatter(x,z)
+plt.show()
 print("Calling InitVel")
 InitVel()      #initial velocity
 
 print("Calling Force")
 Force(x,y,z,fx,fy,fz) # calling Force first time
 
-print("Calling force_wall")
-force_wall(x,y,z,fx,fy,fz)
+
+if bulk == 0:
+    print("Calling force_wall")
+    force_wall(x,y,z,fx,fy,fz)
 
 print("Calling copy_fx_to_fxold")
 copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first time
@@ -608,6 +655,21 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
         print("istep, pe ", istep, pe )
 fp.close()
 # SIMULATION ITERATION ENDS HERE
+
+
+x2 = np.zeros(N)
+y2 = np.zeros(N)
+ax = plt.axes(projection='3d')
+plt.figure()
+for i in range(N):
+    x2[i] = x[i] - Lx * round(x[i]/Lx - 0.5)
+    y2[i] = y[i] - Ly * round(y[i]/Ly - 0.5)
+ax.scatter3D(z, y2, x2, c=x2);
+ax.set_xlabel("z")
+ax.set_ylabel("y")
+ax.set_zlabel("x")
+plt.show()
+#exit()
 
 end = time.time()
 print("------------------------------")

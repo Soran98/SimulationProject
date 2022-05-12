@@ -3,16 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-de_file = "density BC Wall.txt"
-de_file2 = "density VelScaling Wall.txt"
+de_file = "N100-rho0.8-T1.0-sigMin0.8-sigMax1.2-bulk0-Lz6.0density.txt"
+de_file2 = "density.txt"
 data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
 data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
 x1 = data[0]
 y1 = data[1]
 x2 = data2[0]
 y2 = data2[1]
-plt.plot (x1, y1, label='BC')
-plt.plot(x2, y2, label='VelScaling')
+plt.plot (x1, y1, label='12% poly')
+plt.plot(x2, y2, label='0 poly')
 plt.xlabel("Distance")
 plt.ylabel("e")
 leg = plt.legend();

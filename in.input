@@ -1,4 +1,4 @@
-NPART  1024
+NPART  8192
 
 RHO    1.0
 TEMP   1.0
@@ -9,8 +9,8 @@ RCUT   2.50
 MIN-DIST  0.80
 SEED    10
 
-NSTEPS      100000
-eql_steps   10000
+NSTEPS      500000
+eql_steps   100000
 
 sigMin  0.8
 sigMax  1.2

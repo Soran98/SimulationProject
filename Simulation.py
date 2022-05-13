@@ -626,10 +626,10 @@ randomSigma(sigmaSizes)
 
 print("Calling InitConf")
 InitConf(minDist, sigmaSizes, x, y, z) #initial position  
-plt.figure()
-plt.scatter(x,y)
-plt.scatter(x,z)
-plt.show()
+# plt.figure()
+# plt.scatter(x,y)
+# plt.scatter(x,z)
+# plt.show()
 print("Calling InitVel")
 InitVel()      #initial velocity
 
@@ -678,18 +678,18 @@ fp.close()
 # SIMULATION ITERATION ENDS HERE
 
 
-x2 = np.zeros(N)
-y2 = np.zeros(N)
-ax = plt.axes(projection='3d')
-plt.figure()
-for i in range(N):
-    x2[i] = x[i] - Lx * round(x[i]/Lx - 0.5)
-    y2[i] = y[i] - Ly * round(y[i]/Ly - 0.5)
-ax.scatter3D(z, y2, x2, c=x2);
-ax.set_xlabel("z")
-ax.set_ylabel("y")
-ax.set_zlabel("x")
-plt.show()
+# x2 = np.zeros(N)
+# y2 = np.zeros(N)
+# ax = plt.axes(projection='3d')
+# plt.figure()
+# for i in range(N):
+#     x2[i] = x[i] - Lx * round(x[i]/Lx - 0.5)
+#     y2[i] = y[i] - Ly * round(y[i]/Ly - 0.5)
+# ax.scatter3D(z, y2, x2, c=x2);
+# ax.set_xlabel("z")
+# ax.set_ylabel("y")
+# ax.set_zlabel("x")
+# plt.show()
 #exit()
 
 end = time.time()
@@ -707,28 +707,29 @@ fp1.close()
 #--------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
-data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
-data = pd.DataFrame(data)
+# if graphsCheck == 1:    
+#     data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
+#     data = pd.DataFrame(data)
 
-xdata = data[0]
-ydata = data[1]
-xmax = np.max(xdata)
+#     xdata = data[0]
+#     ydata = data[1]
+#     xmax = np.max(xdata)
 
-plt.figure(figsize=(16,12))
-plt.plot(xdata, ydata, '-')
-plt.xlim([100, xmax])
-plt.xlabel('time')
-plt.ylabel('potential energy')
-plt.show()
+#     plt.figure(figsize=(16,12))
+#     plt.plot(xdata, ydata, '-')
+#     plt.xlim([100, xmax])
+#     plt.xlabel('time')
+#     plt.ylabel('potential energy')
+#     plt.show()
 
 
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
-x1 = data1[0]
-y1 = data1[1]
-plt.plot (x1, y1, '-o')
-plt.xlabel("Distance")
-plt.ylabel("Density")
-plt.show()
+# data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
+# x1 = data1[0]
+# y1 = data1[1]
+# plt.plot (x1, y1, '-o')
+# plt.xlabel("Distance")
+# plt.ylabel("Density")
+# plt.show()

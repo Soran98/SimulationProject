@@ -707,29 +707,30 @@ fp1.close()
 #--------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
-# if graphsCheck == 1:    
-#     data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
-#     data = pd.DataFrame(data)
+graphsCheck = 1
+if graphsCheck == 1:    
+    data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
+    data = pd.DataFrame(data)
 
-#     xdata = data[0]
-#     ydata = data[1]
-#     xmax = np.max(xdata)
+    xdata = data[0]
+    ydata = data[1]
+    xmax = np.max(xdata)
 
-#     plt.figure(figsize=(16,12))
-#     plt.plot(xdata, ydata, '-')
-#     plt.xlim([100, xmax])
-#     plt.xlabel('time')
-#     plt.ylabel('potential energy')
-#     plt.show()
+    plt.figure(figsize=(16,12))
+    plt.plot(xdata, ydata, '-')
+    plt.xlim([100, xmax])
+    plt.xlabel('time')
+    plt.ylabel('potential energy')
+    plt.show()
 
 
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-# data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
-# x1 = data1[0]
-# y1 = data1[1]
-# plt.plot (x1, y1, '-o')
-# plt.xlabel("Distance")
-# plt.ylabel("Density")
-# plt.show()
+data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
+x1 = data1[0]
+y1 = data1[1]
+plt.plot (x1, y1, '-o')
+plt.xlabel("Distance")
+plt.ylabel("Density")
+plt.show()

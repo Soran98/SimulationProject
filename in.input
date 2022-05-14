@@ -10,12 +10,12 @@ MIN-DIST  0.80
 SEED    10
 
 NSTEPS      300000
-eql_steps   80000
+eql_steps   90000
 
-sigMin  0.8
-sigMax  1.2
+sigMin  1.0
+sigMax  1.0
 
-bulk    0
+bulk    1
 Lz      12
 binwidth  0.10
 

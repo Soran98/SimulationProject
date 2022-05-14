@@ -322,7 +322,7 @@ def force_wall(x, y, z, fx, fy, fz):
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz 
     
-    return u
+    return u/N
 
 #--------------------------------------------------------------------------
 # reading inpiut file 
@@ -501,8 +501,12 @@ def checkList():
 #--------------------------------------------------------------------------
 def boundaryZcheck(z):
     for i in range(N):
-        if z[i] > (Lz + np.absolute(Lzwall) + Rzwall):
-            print("Z axis molecule went past the wall")
+        if z[i] >   Rzwall:  # for right wall
+            print("Z axis molecule went past the right wall")
+            exit()
+       
+        if z[i] <  Lzwall:
+            print("Z axis molecule went past the left wall")
             exit()
 
 
@@ -515,7 +519,7 @@ def density_mod(z, numParticle):
         if bulk == 1:
             z1 = z[i] - Lz * round(z[i]/Lz - 0.5)
         else:
-            z1 = z[i]
+            z1 = z[i] - Lzwall
         
         ibin = int(z1 / binwidth) #the number of bins
         #if ibin > 19:
@@ -573,7 +577,7 @@ kb = 1
 skin = 0.3
 
 #binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
-nbins = int(Lz / binwidth) + 1
+nbins = int((Rzwall - Lzwall) / binwidth) + 1
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 
@@ -647,6 +651,24 @@ copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first 
 start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
+
+#=================================================================
+# Pre-equilibration via velocity scaling, otherwise, TempBC oscillates between a high and a low temperature for large dt such as dt=0.005
+for istep in range(5000):      #We just decide how many steps we want --> made a variable so we can change it in one place
+    pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+    copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
+    velscaling(vx,vy,vz);
+    if bulk == 0:
+        boundaryZcheck(z);
+
+    if(istep%100==0):
+        K = KE(vx,vy,vz)
+        Tk = (2*K)/(kb*(3*N-4)) 
+        print("Pre-Equilibration istep, pe, temp ", istep, pe , Tk)
+#=================================================================
+
+
+# SIMULATION ITERATION STATRS HERE
 for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
     if velScale == 1:
         pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
@@ -655,7 +677,29 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
     else:
     #print("vx:", vx[istep], "fx:", fx[istep])
         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
-        boundaryZcheck(z);
+#=================================================================
+        if bulk == 0:
+            boundaryZcheck(z);
+#=================================================================
+
+
+
+
+
+
+
+
+# for istep in range(nsteps):      #We just decide how many steps we want --> made a variable so we can change it in one place
+#     if velScale == 1:
+#         pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
+#         copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
+#         velscaling(vx,vy,vz);
+#     else:
+#     #print("vx:", vx[istep], "fx:", fx[istep])
+#         pe = TempBC(x,y,z,vx,vy,vz,fx,fy,fz); 
+    
+#     if bulk == 0:
+#         boundaryZcheck(z)
 
     if istep > eql_steps:
         if istep % density_sample == 0:
@@ -663,8 +707,7 @@ for istep in range(nsteps):      #We just decide how many steps we want --> made
             density_mod(z, numParticle)
             for islab in range(nbins):
                 densities_final_list[islab] = numParticle[islab]/Volbin
-                #fp1.write("%s %s \n"%(islab, densities_final_list[islab]))
-                #fp1.flush();
+                
             
    # exit()
 

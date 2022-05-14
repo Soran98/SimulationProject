@@ -15,7 +15,7 @@ eql_steps   90000
 sigMin  1.0
 sigMax  1.0
 
-bulk    1
+bulk    0
 Lz      12
 binwidth  0.10
 

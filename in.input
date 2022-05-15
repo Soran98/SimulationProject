@@ -12,11 +12,11 @@ SEED    10
 NSTEPS      300000
 eql_steps   100000
 
-sigMin  0.6
-sigMax  1.4
+sigMin  0.7
+sigMax  1.43
 
 bulk    0
-Lz      16
+Lz      12
 binwidth  0.20
 
 wall_neutrality 0

@@ -612,7 +612,7 @@ nlist = np.zeros(N)
 count = 0
  
 # opening energy file
-file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s"%(N, rho, T, sigMin, sigMax, bulk, Lz)
+file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s-binwidth%s"%(N, rho, T, sigMin, sigMax, bulk, Lz, binwidth)
 pe_file = file_tag + "energy.txt"
 fp = open(pe_file, mode="w")
 fp.write("# istep   pe  t_kin   ke\n")

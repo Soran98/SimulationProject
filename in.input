@@ -1,4 +1,4 @@
-NPART  1024
+NPART  2048
 
 RHO    1.0
 TEMP   1.0
@@ -16,7 +16,7 @@ sigMin  0.8
 sigMax  1.2
 
 bulk    0
-Lz      12
+Lz      24
 binwidth  .1
 
 wall_neutrality 0

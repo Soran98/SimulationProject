@@ -17,7 +17,7 @@ sigMax  1.1
 
 bulk    0
 Lz      12
-binwidth  .1
+binwidth  .2
 
 wall_neutrality 0
 

@@ -1,4 +1,4 @@
-NPART  2048
+NPART  1024
 
 RHO    1.0
 TEMP   1.0
@@ -12,11 +12,11 @@ SEED    10
 NSTEPS      300000
 eql_steps   100000
 
-sigMin  0.8
-sigMax  1.2
+sigMin  0.9
+sigMax  1.1
 
 bulk    0
-Lz      24
+Lz      12
 binwidth  .1
 
 wall_neutrality 0

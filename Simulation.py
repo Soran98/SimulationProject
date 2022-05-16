@@ -577,7 +577,11 @@ kb = 1
 skin = 0.3
 
 #binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
-nbins = int((Rzwall - Lzwall) / binwidth) + 1
+if bulk == 1:
+    nbins = int(Lz / binwidth) + 1
+else:
+    nbins = int((Rzwall - Lzwall) / binwidth) + 1
+    
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 

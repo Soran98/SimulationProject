@@ -10,14 +10,14 @@ MIN-DIST  0.80
 SEED    10
 
 NSTEPS      300000
-eql_steps   100000
+eql_steps   150000
 
 sigMin  0.9
 sigMax  1.1
 
 bulk    0
 Lz      12
-binwidth  1.5
+binwidth  .15
 
 wall_neutrality 0
 

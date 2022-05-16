@@ -20,3 +20,5 @@ Lz      12
 binwidth  .1
 
 wall_neutrality 0
+
+graphsCheck     1

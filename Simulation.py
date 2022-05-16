@@ -334,7 +334,7 @@ def read_input():
     global iseed, nsteps, minDist
     global sigMin, sigMax, bulk, Lz
     global wall_neutrality, eql_steps
-    global binwidth
+    global binwidth, graphsCheck
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -400,6 +400,9 @@ def read_input():
             if(a == "binwidth"): 
                 binwidth = float(value)
                 print("binwidth = ", binwidth)
+            if(a == "graphsCheck"): 
+                graphsCheck = int(value)
+                print("Graphs = ", graphsCheck)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -754,7 +757,6 @@ fp1.close()
 #--------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
-graphsCheck = 1
 if graphsCheck == 1:    
     data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
     data = pd.DataFrame(data)
@@ -774,10 +776,11 @@ if graphsCheck == 1:
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
-x1 = data1[0]
-y1 = data1[1]
-plt.plot (x1, y1, '-o')
-plt.xlabel("Distance")
-plt.ylabel("Density")
-plt.show()
+if graphsCheck == 1:
+    data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
+    x1 = data1[0]
+    y1 = data1[1]
+    plt.plot (x1, y1, '-o')
+    plt.xlabel("Distance")
+    plt.ylabel("Density")
+    plt.show()

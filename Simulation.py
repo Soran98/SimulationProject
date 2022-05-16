@@ -116,7 +116,7 @@ def Force(x,y,z,fx,fy,fz):
                 fx[j] = fx[j] - wij * dx
                 fy[j] = fy[j] - wij * dy
                 fz[j] = fz[j] - wij * dz
-    return u
+    return u/N
 #------------------------------------------------------------------------
 #  generate 3 random numbers between 0 and L
 #--------------------------------------------------------------------------

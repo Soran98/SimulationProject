@@ -322,7 +322,7 @@ def force_wall(x, y, z, fx, fy, fz):
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz 
     
-    return u
+    return u/N
 
 #--------------------------------------------------------------------------
 # reading inpiut file 

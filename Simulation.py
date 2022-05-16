@@ -116,7 +116,7 @@ def Force(x,y,z,fx,fy,fz):
                 fx[j] = fx[j] - wij * dx
                 fy[j] = fy[j] - wij * dy
                 fz[j] = fz[j] - wij * dz
-    return u/N
+    return u
 #------------------------------------------------------------------------
 #  generate 3 random numbers between 0 and L
 #--------------------------------------------------------------------------
@@ -313,7 +313,7 @@ def force_wall(x, y, z, fx, fy, fz):
         if wall_neutrality == 0:
             sigma = sigmaSizes[i]
         else:
-            simga = 1
+            sigma = 1
         #right wall
         dz = z[i] - Rzwall
         du = epsilon_w * (sigma/abs(dz)) ** 9
@@ -322,7 +322,7 @@ def force_wall(x, y, z, fx, fy, fz):
         wij = wij / (dz ** 2)
         fz[i] = fz[i] + wij * dz 
     
-    return u/N
+    return u
 
 #--------------------------------------------------------------------------
 # reading inpiut file 

@@ -581,11 +581,11 @@ if bulk == 1:
     nbins = int(Lz / binwidth) + 1
 else:
     nbins = int((Rzwall - Lzwall) / binwidth) + 1
-    
+
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 
-density_sample = 1000
+density_sample = 10000
 
 if Lx < rcut * sigMax * 2 or Ly < rcut * sigMax * 2 or Lz < rcut * sigMax * 2:
     print("Lx or Ly or Lz were less than rcut * sigMax * 2")

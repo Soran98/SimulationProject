@@ -1,4 +1,4 @@
-NPART  4096
+NPART  1024
 
 RHO    1.0
 TEMP   1.0
@@ -10,13 +10,24 @@ MIN-DIST  0.80
 SEED    10
 
 NSTEPS      300000
-eql_steps   100000
+eql_steps   150000
 
+<<<<<<< HEAD
 sigMin  0.80
 sigMax  1.20
 
 bulk    0
 Lz      48
 binwidth  1.60
+=======
+sigMin  0.9
+sigMax  1.1
+
+bulk    0
+Lz      12
+binwidth  .15
+>>>>>>> origin/brown-clarke-works
 
 wall_neutrality 0
+
+graphsCheck     1

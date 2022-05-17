@@ -658,9 +658,10 @@ copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first 
 start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
-
 #=================================================================
 # Pre-equilibration via velocity scaling, otherwise, TempBC oscillates between a high and a low temperature for large dt such as dt=0.005
+dtOld = dt
+dt = 0.0001
 for istep in range(5000):      #We just decide how many steps we want --> made a variable so we can change it in one place
     pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
@@ -672,6 +673,7 @@ for istep in range(5000):      #We just decide how many steps we want --> made a
         K = KE(vx,vy,vz)
         Tk = (2*K)/(kb*(3*N-4)) 
         print("Pre-Equilibration istep, pe, temp ", istep, pe , Tk)
+dt = dtOld
 #=================================================================
 
 

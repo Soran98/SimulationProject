@@ -124,7 +124,7 @@ def Force(x,y,z,fx,fy,fz):
 def x_rand():
     r1 = random.uniform(0, Lx)
     r2 = random.uniform(0, Ly)
-    r3 = random.uniform(0, Lz)
+    r3 = random.uniform(0.5, Lz-0.5)
     return r1, r2, r3
 #--------------------------------------------------------------------------
 #  function to generate randomc ocnfiguration s.t. distance between 2 particles > minDist
@@ -567,9 +567,12 @@ else:
     Ly = Lx
 print("Lx = ", Lx, "Ly = ", Ly, "Lz = ", Lz)
 #make if statement to end program if Lx and Ly are smaller than rcut*2
+Lzwall = 0
+Rzwall = Lz
+# Lzwall = -.5
+# Rzwall = Lz + .5
 
-Lzwall = -.5
-Rzwall = Lz + .5
+
 m = 1
 kb = 1
 

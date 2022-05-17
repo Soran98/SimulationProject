@@ -6,7 +6,7 @@ DT     0.005
 
 RCUT   2.50
 
-MIN-DIST  0.9
+MIN-DIST  0.8
 SEED    10
 
 NSTEPS      6000

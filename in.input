@@ -9,8 +9,8 @@ RCUT   2.50
 MIN-DIST  0.80
 SEED    10
 
-NSTEPS      1000
-eql_steps   1500
+NSTEPS      2000
+eql_steps   0
 
 sigMin  0.8
 sigMax  1.2

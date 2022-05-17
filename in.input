@@ -1,6 +1,6 @@
 NPART  1024
 
-RHO    .85
+RHO    .9
 TEMP   1.5
 DT     0.005
 

@@ -313,7 +313,7 @@ def force_wall(x, y, z, fx, fy, fz):
         if wall_neutrality == 0:
             sigma = sigmaSizes[i]
         else:
-            simga = 1
+            sigma = 1
         #right wall
         dz = z[i] - Rzwall
         du = epsilon_w * (sigma/abs(dz)) ** 9
@@ -334,7 +334,7 @@ def read_input():
     global iseed, nsteps, minDist
     global sigMin, sigMax, bulk, Lz
     global wall_neutrality, eql_steps
-    global binwidth
+    global binwidth, graphsCheck
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -400,6 +400,9 @@ def read_input():
             if(a == "binwidth"): 
                 binwidth = float(value)
                 print("binwidth = ", binwidth)
+            if(a == "graphsCheck"): 
+                graphsCheck = int(value)
+                print("Graphs = ", graphsCheck)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -577,7 +580,11 @@ kb = 1
 skin = 0.3
 
 #binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
-nbins = int((Rzwall - Lzwall) / binwidth) + 1
+if bulk == 1:
+    nbins = int(Lz / binwidth) + 1
+else:
+    nbins = int((Rzwall - Lzwall) / binwidth) + 1
+
 Volbin = Lx * Ly * binwidth
 totalLength = binwidth * nbins
 
@@ -612,7 +619,7 @@ nlist = np.zeros(N)
 count = 0
  
 # opening energy file
-file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s"%(N, rho, T, sigMin, sigMax, bulk, Lz)
+file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s-binwidth%s"%(N, rho, T, sigMin, sigMax, bulk, Lz, binwidth)
 pe_file = file_tag + "energy.txt"
 fp = open(pe_file, mode="w")
 fp.write("# istep   pe  t_kin   ke\n")
@@ -651,9 +658,10 @@ copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold) # initialization of fxold=fx first 
 start = time.time()
 
 # SIMULATION ITERATION STATRS HERE
-
 #=================================================================
 # Pre-equilibration via velocity scaling, otherwise, TempBC oscillates between a high and a low temperature for large dt such as dt=0.005
+dtOld = dt
+dt = 0.0001
 for istep in range(5000):      #We just decide how many steps we want --> made a variable so we can change it in one place
     pe = Integration(x,y,z,vx,vy,vz,fx,fy,fz,fxold,fyold,fzold); 
     copy_fx_to_fxold(fx,fy,fz,fxold,fyold,fzold);
@@ -665,6 +673,7 @@ for istep in range(5000):      #We just decide how many steps we want --> made a
         K = KE(vx,vy,vz)
         Tk = (2*K)/(kb*(3*N-4)) 
         print("Pre-Equilibration istep, pe, temp ", istep, pe , Tk)
+dt = dtOld
 #=================================================================
 
 
@@ -750,7 +759,6 @@ fp1.close()
 #--------------------------------------------------------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
-graphsCheck = 1
 if graphsCheck == 1:    
     data = pd.read_csv(pe_file, sep='\s+',header=None, skiprows=1)
     data = pd.DataFrame(data)
@@ -770,10 +778,11 @@ if graphsCheck == 1:
 #--------------------------------------------------------------------------
 #   Plotting potential energy vs time
 #--------------------------------------------------------------------------
-data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
-x1 = data1[0]
-y1 = data1[1]
-plt.plot (x1, y1, '-o')
-plt.xlabel("Distance")
-plt.ylabel("Density")
-plt.show()
+if graphsCheck == 1:
+    data1 = pd.read_csv(density_file, sep='\s+',header=None, skiprows=1)
+    x1 = data1[0]
+    y1 = data1[1]
+    plt.plot (x1, y1, '-o')
+    plt.xlabel("Distance")
+    plt.ylabel("Density")
+    plt.show()

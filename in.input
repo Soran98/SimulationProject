@@ -1,6 +1,6 @@
 NPART  1024
 
-RHO    .69
+RHO    .63
 TEMP   1.5
 DT     0.005
 
@@ -12,8 +12,8 @@ SEED    10
 NSTEPS      300000
 eql_steps   150000
 
-sigMin  0.5
-sigMax  1.5
+sigMin  0.4
+sigMax  1.6
 
 bulk    0
 Lz      12

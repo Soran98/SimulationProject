@@ -1,6 +1,6 @@
-NPART  8192
+NPART  1024
 
-RHO    .85
+RHO    .79
 TEMP   1.5
 DT     0.005
 
@@ -19,6 +19,6 @@ bulk    0
 Lz      12
 binwidth  .1
 
-wall_neutrality 0
+wall_neutrality 1
 
 graphsCheck     1

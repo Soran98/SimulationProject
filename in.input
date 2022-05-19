@@ -6,14 +6,14 @@ DT     0.005
 
 RCUT   2.50
 
-MIN-DIST  0.78
+MIN-DIST  0.79
 SEED    10
 
 NSTEPS      300000
 eql_steps   150000
 
-sigMin  0.4
-sigMax  1.6
+sigMin  0.5
+sigMax  1.5
 
 bulk    0
 Lz      12

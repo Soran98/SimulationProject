@@ -13,7 +13,7 @@ NSTEPS      300000
 eql_steps   150000
 
 sigMin  0.5
-sigMax  1.5
+sigMax  1.6
 
 bulk    0
 Lz      12

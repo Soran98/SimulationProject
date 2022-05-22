@@ -303,7 +303,7 @@ def force_wall(x, y, z, fx, fy, fz):
         dz = z[i] - Lzwall
         #print(dz, z[i], Lzwall)
         #exit()
-        du = epsilon_w * (sigma/abs(dz)) ** 9
+        du = epsilon_w * ((sigma/abs(dz)) ** 9 )
         u = u + du
         wij = 9 * epsilon_w * (sigma/abs(dz)) ** 9
         wij = wij / (dz ** 2)
@@ -316,7 +316,7 @@ def force_wall(x, y, z, fx, fy, fz):
             sigma = 1
         #right wall
         dz = z[i] - Rzwall
-        du = epsilon_w * (sigma/abs(dz)) ** 9
+        du = epsilon_w * ((sigma/abs(dz)) ** 9 -(sigma/abs(dz))**3)
         u = u + du
         wij = 9 * epsilon_w * (sigma/abs(dz)) ** 9
         wij = wij / (dz ** 2)

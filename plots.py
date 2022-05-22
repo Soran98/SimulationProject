@@ -7,20 +7,20 @@ import glob
 # list = glob.glob("*.txt")
 # print(list)
 # exit()
-de_file = "N1024-rho0.85-T1.5-sigMin0.7-sigMax1.3-bulk0-Lz24.0-binwidth0.1energy.txt"
-de_file2 = "N2048-rho0.85-T1.5-sigMin0.7-sigMax1.3-bulk0-Lz24.0-binwidth0.1energy.txt"
+de_file = "RUMD-Software-LJ-N1024-rho1.0-T1.0-energy.dat"
+#de_file2 = "N2048-rho0.85-T1.5-sigMin0.7-sigMax1.3-bulk0-Lz24.0-binwidth0.1energy.txt"
 #de_file3 = "N4096-rho1.0-T1.0-sigMin0.9-sigMax1.1-bulk0-Lz64.0-binwidth0.1density.txt"
 data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
-data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
+#data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
 #data3 = pd.read_csv(de_file3, sep='\s+',header=None, skiprows=1)
 x1 = data[0]
-y1 = data[1]
-x2 = data2[0]
-y2 = data2[1]
+y1 = data[2]
+#x2 = data2[0]
+#y2 = data2[1]
 #x3 = data3[0]
 #y3 = data3[1]
 plt.plot (x1, y1, '-', label='1024')
-plt.plot(x2, y2, '-', label='2048')
+#plt.plot(x2, y2, '-', label='2048')
 #plt.plot(x3, y3, '-', label='4096')
 plt.xlabel("Distance")
 plt.ylabel("Density")

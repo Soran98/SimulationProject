@@ -584,7 +584,7 @@ skin = 0.3
 
 #binwidth = Lz / nbins #add Rzwall and Lzwall to Lz
 if bulk == 1:
-    nbins = int(Lz / binwidth) + 1
+    nbins = int(Lz / binwidth) 
 else:
     nbins = int((Rzwall - Lzwall) / binwidth) + 1
 
@@ -620,7 +620,7 @@ sigma6 = np.zeros(N)
 nlist = np.zeros(N)
 
 count = 0
- 
+
 # opening energy file
 file_tag = "N%s-rho%s-T%s-sigMin%s-sigMax%s-bulk%s-Lz%s-binwidth%s-wNeutrality%s-"%(N, rho, T, sigMin, sigMax, bulk, Lz, binwidth, wall_neutrality)
 pe_file = file_tag + "energy.txt"

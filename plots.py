@@ -5,21 +5,21 @@ import glob
 
 
 # list = []
-# list = glob.glob("*.dat")
+# list = glob.glob("*.txt")
 # print(list)
 # exit()
 
 
-"""
-#de_file =  "RUMD-Software-LJ-N1024-rho1.0-T1.0-energy.dat"
-#data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
-x1, y1 = np.loadtxt('RUMD-Software-LJ-N1024-rho1.0-T1.0-energy.dat',unpack=True, usecols=[0,2], skiprows=2)
-# x1 = data[1]
-# y1 = data[3]
+#"""
+de_file =  "N1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-energy.txt"
+data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
+#x1, y1 = np.loadtxt('RUMD-Software-LJ-N1024-rho1.0-T1.0-energy.dat',unpack=True, usecols=[0,2], skiprows=2)
+x1 = data[0]
+y1 = data[1]
 plt.plot (x1, y1, '-', label='N=1204')
 plt.xlabel("Time")
 plt.ylabel("Potential Energy")
-plt.title("N = 1024, T = 1.5, ρ = 0.63, Wall Neutrality = 0")
+plt.title("N = 1024, T = 1.0, ρ = 1.0")
 leg = plt.legend();
 plt.show()
 """
@@ -69,7 +69,7 @@ leg = plt.legend();
 plt.show()
 """
 
-#"""
+"""
 de_file =  "N2048-rho0.85-T1.5-sigMin1.0-sigMax1.0-bulk0-Lz12.0-binwidth0.1-wNeutrality1-density.txt"
 de_file2 = "N2048-rho0.85-T1.5-sigMin0.9-sigMax1.1-bulk0-Lz12.0-binwidth0.1-wNeutrality1-density.txt"
 de_file3 = "N2048-rho0.85-T1.5-sigMin0.8-sigMax1.2-bulk0-Lz12.0-binwidth0.1-wNeutrality1-density.txt"

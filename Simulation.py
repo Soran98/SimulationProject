@@ -44,7 +44,6 @@ sigma = 1
 # density_sample = 1000
 #--------------------------------------------------------------------------
 #Tempurate and wall control method
-velScale = 0
 # bulk = 0
 
 #--------------------------------------------------------------------------
@@ -334,7 +333,7 @@ def read_input():
     global iseed, nsteps, minDist
     global sigMin, sigMax, bulk, Lz
     global wall_neutrality, eql_steps
-    global binwidth, graphsCheck
+    global binwidth, graphsCheck, velScale
 
     #infile=sys.argv[1]
     infile = "in.input";
@@ -403,6 +402,9 @@ def read_input():
             if(a == "graphsCheck"): 
                 graphsCheck = int(value)
                 print("Graphs = ", graphsCheck)
+            if(a == "velScale"): 
+                velScale = int(value)
+                print("velScale = ", velScale)
 #--------------------------------------------------------------------------
 #Tempurature Control Brown-Clarke
 #--------------------------------------------------------------------------
@@ -539,7 +541,6 @@ def density_mod(z, numParticle):
 #  MAIN fnction to call all functiona as required
 #=========================================================================
 #=========================================================================
-
 read_input() # reading input file. 
 
 if bulk == 1: 

@@ -25,20 +25,19 @@ plt.show()
 """
 
 
-#"""
+"""              Confirmation
 x1, y1 = np.loadtxt('RUMD-Software-LJ-N1024-rho1.0-T1.0-energy.dat',unpack=True, usecols=[0,2], skiprows=2)
-# de_file =  "RUMD_DATA_TXT.txt"
 de_file2 =  "N1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-energy.txt"
-# data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=2)
+de_file3 =  "VN1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-energy.txt"
 data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
-#x2, y2 = np.loadtxt('N1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-density.txt',unpack=True, usecols=[0,1], skiprows=1)
-# x1 = data[0]
-# y1 = data[2]
+data3 = pd.read_csv(de_file3, sep='\s+',header=None, skiprows=1)
 x2 = data2[0]
 y2 = data2[1]
-plt.plot (x2, y2, '--', label="Project Simulation")
+x3 = data3[0]
+y3 = data3[1]
+plt.plot (x2, y2, '--', label="Brown-Clarke")
 plt.plot (x1, y1, '-', label="RUMD")
-#plt.plot (x2, y2, '--', label="Project Simulation")
+plt.plot(x3, y3, '-', label="VelScale")
 plt.xlabel("Time Steps")
 plt.ylabel("PE")
 plt.xlim(0, 1000000)
@@ -47,6 +46,23 @@ leg = plt.legend();
 plt.show()
 #"""
 
+#"""                         For Density Modulation between velscale and brown-clarke
+de_file =  "VN1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-density.txt"
+de_file2 = "N1024-rho1.0-T1.0-sigMin1.0-sigMax1.0-bulk1-Lz10.079368399158984-binwidth0.1-wNeutrality0-density.txt"
+data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
+data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
+x1 = data[0]
+y1 = data[1]
+x2 = data2[0]
+y2 = data2[1]
+plt.plot(x1, y1, '-', label='Brown-Clarke')
+plt.plot(x2, y2, '-', label='VelScale')
+plt.xlabel("Distance")
+plt.ylabel("Density")
+plt.title("N = 1024, T = 1.0, ρ = 1.0 Brown-Clarke vs. VelScaling")
+leg = plt.legend();
+plt.show()
+#"""
 
 """
 de_file =  "N2048-rho0.85-T1.5-sigMin1.0-sigMax1.0-bulk0-Lz12.0-binwidth0.1-wNeutrality1-energy.txt"
@@ -316,6 +332,35 @@ plt.plot(x7, y7, '-', label='34.64 ρ=0.63%')
 plt.xlabel("Distance")
 plt.ylabel("Density")
 plt.title("N = 2048, T = 1.5, Packing Fractions Densities, Wall Neutrality = 1")
+leg = plt.legend();
+plt.show()
+"""
+
+"""                     Keirstana asked for 0% and 5% energy
+de_file =  "N1024-rho0.85-T1.5-sigMin1.0-sigMax1.0-bulk0-Lz12.0-binwidth0.1-wNeutrality0-energy.txt"
+de_file2 = "N1024-rho0.85-T1.5-sigMin0.9-sigMax1.1-bulk0-Lz12.0-binwidth0.1-wNeutrality0-energy.txt"
+de_file3 = "N2048-rho0.85-T1.5-sigMin1.0-sigMax1.0-bulk0-Lz12.0-binwidth0.1-wNeutrality0-energy.txt"
+de_file4 = "N2048-rho0.85-T1.5-sigMin0.9-sigMax1.1-bulk0-Lz12.0-binwidth0.1-wNeutrality0-energy.txt"
+data = pd.read_csv(de_file, sep='\s+',header=None, skiprows=1)
+data2 = pd.read_csv(de_file2, sep='\s+',header=None, skiprows=1)
+data3 = pd.read_csv(de_file3, sep='\s+',header=None, skiprows=1)
+data4 = pd.read_csv(de_file4, sep='\s+',header=None, skiprows=1)
+x1 = data[0]
+y1 = data[1]
+x2 = data2[0]
+y2 = data2[1]
+x3 = data3[0]
+y3 = data3[1]
+x4 = data4[0]
+y4 = data4[1]
+plt.plot(x1, y1, '-', label='N=1024 0%')
+plt.plot(x2, y2, '-', label='N=1024 5.77%')
+plt.plot(x3, y3, '-', label='N=2048 0%')
+plt.plot(x4, y4, '-', label='N=2048 5.77%')
+plt.xlim(150000)
+plt.xlabel("Potential Energy")
+plt.ylabel("Time Steps")
+plt.title("N = 1024 & 2048, T = 1.5, ρ = 0.85, Wall Neutrality = 1")
 leg = plt.legend();
 plt.show()
 """

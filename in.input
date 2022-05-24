@@ -1,4 +1,4 @@
-NPART  2048
+NPART  1024
 
 RHO    0.85
 TEMP   1.5
@@ -9,11 +9,11 @@ RCUT   2.50
 MIN-DIST  0.80
 SEED    10
 
-NSTEPS      1000000
-eql_steps   200000
+NSTEPS      300000
+eql_steps   150000
 
-sigMin  0.9
-sigMax  1.1
+sigMin  1.0
+sigMax  1.0
 
 bulk    0
 Lz      12
@@ -22,4 +22,4 @@ binwidth  .1
 wall_neutrality 0
 
 graphsCheck     1
-velScale        0
+velScale        1
